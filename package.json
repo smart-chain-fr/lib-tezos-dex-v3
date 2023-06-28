@@ -1,0 +1,25 @@
+{
+    "name": "dex-v3",
+    "version": "0.1.0",
+    "main": "./lib/cfmm/main.mligo",
+    "description": "Library of CFMM (Uniswap-v3) - BETA",
+    "directories": {
+      "lib": "lib",
+      "test": "test"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/smart-chain-fr/lib-tezos-dex-v3.git"
+    },
+    "keywords": ["ligo", "tezos", "AMM"],
+    "author": "Frank Hillard <frank.hillard@smart-chain.fr>",
+    "license": "MIT",
+    "bugs": {
+      "url": "https://github.com/smart-chain-fr/lib-tezos-dex-v3/issues"
+    },
+    "homepage": "https://github.com/smart-chain-fr/lib-tezos-dex-v3",
+    "dependencies": {
+      "ligo-extendable-fa2": "^1.0.4",
+      "ligo_fa1.2": "^1.0.0"
+    }
+}

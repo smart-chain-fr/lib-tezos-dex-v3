@@ -1,0 +1,5 @@
+_esy/
+.ligo/
+esy.lock/
+compiled
+node_modules
