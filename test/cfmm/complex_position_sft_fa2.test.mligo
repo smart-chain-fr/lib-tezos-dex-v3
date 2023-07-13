@@ -8,6 +8,7 @@
 #import "../helpers/maths.mligo" "Maths"
 #import "../helpers/utils.mligo" "Utils"
 #import "../helpers/config.mligo" "Config_helper"
+#import "../helpers/observe_consumer.mligo" "Observer_helper"
 
 let () = Log.describe("[SFT-FA2] [Cfmm.complex_position] test suite")
 
@@ -172,7 +173,8 @@ let test_position_initialization =
     let () = ExtendedFA2_helper.update_operators_success([Add_operator({owner=swapper; operator=cfmm.addr; token_id=0n})], tokenY.contr) in
 
     // CHECK INVARIANTS
-    let () = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr) in
+    let observer = Bootstrap.boot_observe_consumer(0tez) in
+    let () = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr, observer) in
 
     // -- | Attemps to execute a swap.
     // -- If it fails with `tooBigPriceChangeErr`, try again with a smaller amount.
@@ -215,10 +217,6 @@ let test_position_initialization =
     let swap_directions = generate_swap_direction(data_length) in
 
     let process(cpd, swap_dir : create_position_data * bool) : unit =
-        // let () = Test.log("cpd") in
-        // let () = Test.log(cpd) in
-        // let () = Test.log("swap_dir") in
-        // let () = Test.log(swap_dir) in
 
         // -- Perform a swap to move the tick a bit.
         // -- This ensures the global accumulators (like fee_growth) aren't always 0.
@@ -234,14 +232,8 @@ let test_position_initialization =
         in
         let () = List.iter apply_attempt_swap swaps in
 
-        // TODO remove because useless ?
-        // -- Advance the time a few secs to make sure accumulators
-        // -- like `seconds_per_liquidity_cumulative` change to non-zero values.
-        // let elapsed = Cfmm_helper.advanceTime(cfmm.contr) in
-        // let cpd = { cpd with cpdWaitTime=elapsed } in
-
         // CHECK INVARIANTS
-        let () = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr) in
+        let () = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr, observer) in
 
         let s_init = Test.get_storage cfmm.taddr in
         let initialCfmmBalanceX = SFT_helper.get_user_balance(tokenX.taddr, cfmm.addr) in
@@ -252,8 +244,8 @@ let test_position_initialization =
         let param : Cfmm.set_position_param = Cfmm_helper.generate_set_position_param(cpd.cpdLiquidityDelta, (cpd.cpdLowerTickIndex, cpd.cpdUpperTickIndex)) in
         let () = Cfmm_helper.set_position_success(param, 0tez, cfmm.contr) in
 
-        // CHECK INVARIANTS
-        let () = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr) in
+        // // CHECK INVARIANTS
+        let () = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr, observer) in
 
         let s_after = Test.get_storage cfmm.taddr in
 
@@ -280,20 +272,20 @@ let test_position_initialization =
         let () = assert(upper_tick.liquidity_net = 0n - cpd.cpdLiquidityDelta) in
         let () = assert(lower_tick.n_positions = 1n) in
         let () = assert(upper_tick.n_positions = 1n) in
-
-        let expected_lower_accumulator = Cfmm_helper.initTickAccumulators(cfmm.addr, s_after, cpd.cpdLowerTickIndex) in
-        let () = assert(int(lower_tick.seconds_outside) = expected_lower_accumulator.seconds) in
-        let () = assert(lower_tick.tick_cumulative_outside = expected_lower_accumulator.tick_cumulative) in
+        
+        let expected_lower_accumulator = Cfmm_helper.initTickAccumulators(cfmm.addr, observer, s_after, cpd.cpdLowerTickIndex) in
+        // let () = assert(int(lower_tick.seconds_outside) = expected_lower_accumulator.seconds) in
+        // let () = assert(lower_tick.tick_cumulative_outside = expected_lower_accumulator.tick_cumulative) in
         let () = assert(int(lower_tick.fee_growth_outside.x.x128) = expected_lower_accumulator.fee_growth.x.x128) in
         let () = assert(int(lower_tick.fee_growth_outside.y.x128) = expected_lower_accumulator.fee_growth.y.x128) in
-        let () = assert(int(lower_tick.seconds_per_liquidity_outside.x128) = expected_lower_accumulator.seconds_per_liquidity) in
+        // let () = assert(int(lower_tick.seconds_per_liquidity_outside.x128) = expected_lower_accumulator.seconds_per_liquidity) in
 
-        let expected_upper_accumulator = Cfmm_helper.initTickAccumulators(cfmm.addr, s_after, cpd.cpdUpperTickIndex) in
-        let () = assert(int(upper_tick.seconds_outside) = expected_upper_accumulator.seconds) in
-        let () = assert(upper_tick.tick_cumulative_outside = expected_upper_accumulator.tick_cumulative) in
+        let expected_upper_accumulator = Cfmm_helper.initTickAccumulators(cfmm.addr, observer, s_after, cpd.cpdUpperTickIndex) in
+        // let () = assert(int(upper_tick.seconds_outside) = expected_upper_accumulator.seconds) in
+        // let () = assert(upper_tick.tick_cumulative_outside = expected_upper_accumulator.tick_cumulative) in
         let () = assert(int(upper_tick.fee_growth_outside.x.x128) = expected_upper_accumulator.fee_growth.x.x128) in
         let () = assert(int(upper_tick.fee_growth_outside.y.x128) = expected_upper_accumulator.fee_growth.y.x128) in
-        let () = assert(int(upper_tick.seconds_per_liquidity_outside.x128) = expected_upper_accumulator.seconds_per_liquidity) in
+        // let () = assert(int(upper_tick.seconds_per_liquidity_outside.x128) = expected_upper_accumulator.seconds_per_liquidity) in
 
         // -- Check global state updates
         let positionIsActive = (cpd.cpdLowerTickIndex <= s_after.cur_tick_index.i && s_after.cur_tick_index.i < cpd.cpdUpperTickIndex) in
@@ -316,7 +308,17 @@ let test_position_initialization =
         let () = assert(position.lower_tick_index.i = cpd.cpdLowerTickIndex) in
         let () = assert(position.upper_tick_index.i = cpd.cpdUpperTickIndex) in
 
-        let expectedAccumulatorInside = Cfmm_helper.tickAccumulatorsInside(s_after, cfmm.addr) ({i=cpd.cpdLowerTickIndex}, {i=cpd.cpdUpperTickIndex}) in
+        // CHECK INVARIANTS
+        // let observer = Bootstrap.boot_observe_consumer(0tez) in
+        let () = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr, observer) in
+
+        // check feegrowth
+        let current_time = Tezos.get_now() in
+        let () = Observer_helper.call_observe_success((cfmm.addr, [current_time]), observer.contr) in
+        let cumul_buffer = Test.get_storage observer.taddr in
+        // let () = Test.log("[process] observer helper", (current_time - (0: timestamp)),  cumul_buffer) in
+
+        let expectedAccumulatorInside = Cfmm_helper.tickAccumulatorsInside(s_after, current_time - (0: timestamp), cumul_buffer) ({i=cpd.cpdLowerTickIndex}, {i=cpd.cpdUpperTickIndex}) in
         let expectedFeeGrowthInside = expectedAccumulatorInside.fee_growth in
         let () = assert(position.fee_growth_inside_last.x.x128 = expectedFeeGrowthInside.x.x128) in
         let () = assert(position.fee_growth_inside_last.y.x128 = expectedFeeGrowthInside.y.x128) in

@@ -5,8 +5,7 @@
 #import "../../lib/cfmm/defaults.mligo" "Default"
 #import "./maths.mligo" "Maths"
 #import "./config.mligo" "Config_helper"
-// #import "./cfmm_invariants.mligo" "Cfmm_invariants"
-
+#import "./observe_consumer.mligo" "Observer_helper"
 
 type taddr = (Cfmm.parameter, Cfmm.storage) typed_address
 type contr = Cfmm.parameter contract
@@ -51,29 +50,27 @@ let originate (init_storage : Cfmm.storage) =
     Use this one if you need access to views
 *)
 let originate_from_file (init_storage, balance : Cfmm.storage * tez) =
-    // let f = "../../ligo/main.mligo" in
-    let f = "../../ligo/main_fa2_fa2.mligo" in
+    let f = "../../lib/cfmm/main_fa2_fa2.mligo" in
     let v_mich = Test.run (fun (x:Cfmm.storage) -> x) init_storage in
-    let (addr, _, _) = Test.originate_from_file f "main" ["v_get_position_info"; "v_observe"; "v_snapshot_cumulatives_inside"] v_mich balance in
+    let (addr, _, _) = Test.originate_from_file f "main" ["v_get_constants"] v_mich balance in
     let taddr : taddr = Test.cast_address addr in
     let contr = Test.to_contract taddr in
     {addr = addr; taddr = taddr; contr = contr}
 
 let originate_from_file_fa12_fa2 (init_storage, balance : Cfmm.storage * tez) =
-    // let f = "../../ligo/main.mligo" in
-    let f = "../../ligo/main_fa12_fa2.mligo" in
+    let f = "../../lib/cfmm/main_fa12_fa2.mligo" in
     let v_mich = Test.run (fun (x:Cfmm.storage) -> x) init_storage in
-    let (addr, _, _) = Test.originate_from_file f "main" ["v_get_position_info"; "v_observe"; "v_snapshot_cumulatives_inside"] v_mich balance in
+    // let (addr, _, _) = Test.originate_from_file f "main" ["v_get_position_info"; "v_observe"; "v_snapshot_cumulatives_inside"] v_mich balance in
+    let (addr, _, _) = Test.originate_from_file f "main" ["v_get_constants"] v_mich balance in
     let taddr : taddr = Test.cast_address addr in
     let contr = Test.to_contract taddr in
     {addr = addr; taddr = taddr; contr = contr}
 
 let originate_from_file_by_config (config, init_storage, balance : Config_helper.config * Cfmm.storage * tez) =
-    // let f = "../../ligo/main.mligo" in
     let f = Config_helper.get_main_path(config) in
-    // let f = "../../ligo/main_fa12_fa2.mligo" in
     let v_mich = Test.run (fun (x:Cfmm.storage) -> x) init_storage in
-    let (addr, _, _) = Test.originate_from_file f "main" ["v_get_position_info"; "v_observe"; "v_snapshot_cumulatives_inside"] v_mich balance in
+    // let (addr, _, _) = Test.originate_from_file f "main" ["v_get_position_info"; "v_observe"; "v_snapshot_cumulatives_inside"] v_mich balance in
+    let (addr, _, _) = Test.originate_from_file f "main" ["v_get_constants"] v_mich balance in
     let taddr : taddr = Test.cast_address addr in
     let contr = Test.to_contract taddr in
     {addr = addr; taddr = taddr; contr = contr}
@@ -103,6 +100,8 @@ let y_to_x(p, amount_, contr : Cfmm.y_to_x_param * tez * contr) =
 let increase_observation_count(p, amount_, contr : Cfmm.increase_observation_count_param * tez * contr) =
     call_with_amount(Increase_observation_count(p), amount_, contr)
 
+let observe(p, amount_, contr : Cfmm.observe_param * tez * contr) =
+    call_with_amount(Observe(p), amount_, contr)
 
 let set_position_success(p, amount_, contr : Cfmm.set_position_param * tez * contr) =
     Assert.tx_success (set_position(p, amount_, contr))
@@ -119,12 +118,8 @@ let y_to_x_success(p, amount_, contr : Cfmm.y_to_x_param * tez * contr) =
 let increase_observation_count_success(p, amount_, contr : Cfmm.increase_observation_count_param * tez * contr) =
     Assert.tx_success (increase_observation_count(p, amount_, contr))
 
-let call_view_observe(lst, addr : timestamp list * address) : Cfmm.oracle_view_param =
-    let ret_list_opt : Cfmm.oracle_view_param option = Tezos.call_view "v_observe" lst addr in
-    match ret_list_opt with
-    | Some l -> l
-    | None -> Test.failwith("Could not call Observe view")
-
+let observe_success(p, amount_, contr : Cfmm.observe_param * tez * contr) =
+    Assert.tx_success (observe(p, amount_, contr))
 
 
 // GENERATE PARAM HELPERS
@@ -224,10 +219,8 @@ let collectAllFees(taddr, contr, receiver : taddr * contr * address) : unit =
     let collect_fees(acc, (pi, ps) : test_exec_result list * (Cfmm.position_id * Cfmm.position_state)) : test_exec_result list =
         let owner = ps.owner in 
         let () = Test.set_source owner in
-        // let () = Test.log("collect_fees on ", pi) in
         let param_update : Cfmm.update_position_param = generate_update_position_param(pi, 0, receiver, 0n, 0n) in
         let r = update_position(param_update, 0tez, contr) in
-        // let () = Test.log(r) in
         r :: acc
     in  
     let _rrr = List.fold collect_fees cfmm_positions ([] : test_exec_result list) in
@@ -261,7 +254,6 @@ let apply_on_cumulatives_buffer_by_reserved_reversed (type a) (buffer, f : Cfmm.
 (* assert Cfmm contract at [taddr] have [expected_admin] address as admin *)
 let assert_liquidity (taddr, expected_liquidity : taddr * nat) =
     let s = Test.get_storage taddr in
-    // let () = Test.log(s.liquidity) in
     assert(s.liquidity = expected_liquidity)
 
 // Assert tick equality
@@ -370,7 +362,6 @@ let assert_storage_equal(a, b : Cfmm.storage * Cfmm.storage) : unit =
 
 
 // INVARIANTS HELPERS
-
 type accumulator = {
     seconds : int;
     tick_cumulative : int;
@@ -387,34 +378,43 @@ let empty_accumulator : accumulator =
 }
 
 // Tick helper
-let initTickAccumulators(cfmm_address, store, tickIndex : address * Cfmm.storage * int) : accumulator =
+let initTickAccumulatorsForBuffer(timestamp_in_seconds, cumul_buffer, store, tickIndex : int * Cfmm.oracle_view_param * Cfmm.storage * int) : accumulator =
     if store.cur_tick_index.i >= tickIndex then
-        // let time = Tezos.get_now() in
-        // let timeInSeconds = time - ("1970-01-01t00:00:00Z" : timestamp) in
-        // // TODO : given time is in the future ... failure
-        // let ret_list = call_view_observe([time], cfmm_address) in
-        // let ret : Cfmm.cumulatives_value = Option.unopt (List.head_opt ret_list) in
-        // let cvTickCumulative : int = ret.tick_cumulative in
-        // let cvSecondsPerLiquidityCumulative : Cfmm.x128n = ret.seconds_per_liquidity_cumulative in
-        // { 
-        //     seconds = abs(timeInSeconds);
-        //     tick_cumulative = cvTickCumulative;
-        //     fee_growth = {x={x128=store.fee_growth.x.x128}; y={x128=store.fee_growth.y.x128}};
-        //     seconds_per_liquidity = cvSecondsPerLiquidityCumulative;
-        // }
-
-        // GET TIME FROM CUMULATIVES BUFFER (but should use Tezos.get_now())
-        // retrieve all timestamp from cumulatives_buffer and take the last 
-        let get_time_from_cumulatives_buffer(_ti, tc : nat * Cfmm.timed_cumulatives) : timestamp = tc.time in
-        let buffer_times_reversed = apply_on_cumulatives_buffer_reversed(store.cumulatives_buffer, get_time_from_cumulatives_buffer) in
-        let test_timestamp = Option.unopt (List.head_opt buffer_times_reversed) in
-        let test_timestamp_int : int = test_timestamp - (0: timestamp) in
-        let ret_list = call_view_observe([test_timestamp], cfmm_address) in
-        let ret : Cfmm.cumulatives_value = Option.unopt (List.head_opt ret_list) in
+        let ret : Cfmm.cumulatives_value = Option.unopt (List.head_opt cumul_buffer) in
         let cvTickCumulative : int = ret.tick_cumulative in
         let cvSecondsPerLiquidityCumulative : Cfmm.x128n = ret.seconds_per_liquidity_cumulative in
         { 
-            seconds = test_timestamp_int;
+            seconds = timestamp_in_seconds;
+            tick_cumulative = cvTickCumulative;
+            fee_growth = {x={x128=int(store.fee_growth.x.x128)}; y={x128=int(store.fee_growth.y.x128)}};
+            seconds_per_liquidity = int(cvSecondsPerLiquidityCumulative.x128);
+        }
+    else
+        empty_accumulator
+
+
+let initTickAccumulators(cfmm_address, observer, store, tickIndex : address * Observer_helper.originated * Cfmm.storage * int) : accumulator =
+    if store.cur_tick_index.i >= tickIndex then
+    
+        // DEBUG
+        // GET TIME FROM CUMULATIVES BUFFER (but should use Tezos.get_now())
+        // retrieve all timestamp from cumulatives_buffer and take the last 
+        // let get_time_from_cumulatives_buffer(_ti, tc : nat * Cfmm.timed_cumulatives) : timestamp = tc.time in
+        // let buffer_times_reversed = apply_on_cumulatives_buffer_reversed(store.cumulatives_buffer, get_time_from_cumulatives_buffer) in
+        // let test_timestamp = Option.unopt (List.head_opt buffer_times_reversed) in
+        // let test_timestamp_int : int = test_timestamp - (0: timestamp) in
+
+        // OBSERVE
+        let current_time = Tezos.get_now() in
+        let () = Observer_helper.call_observe_success((cfmm_address, [current_time]), observer.contr) in
+        let oracle_view_param = Test.get_storage observer.taddr in
+        // let () = Test.log("[initTickAccumulators] at ", current_time, " => ", oracle_view_param) in
+
+        let ret : Cfmm.cumulatives_value = Option.unopt (List.head_opt oracle_view_param) in
+        let cvTickCumulative : int = ret.tick_cumulative in
+        let cvSecondsPerLiquidityCumulative : Cfmm.x128n = ret.seconds_per_liquidity_cumulative in
+        { 
+            seconds = current_time - (0: timestamp); //test_timestamp_int;
             tick_cumulative = cvTickCumulative;
             fee_growth = {x={x128=int(store.fee_growth.x.x128)}; y={x128=int(store.fee_growth.y.x128)}};
             seconds_per_liquidity = int(cvSecondsPerLiquidityCumulative.x128);
@@ -447,7 +447,7 @@ let sub_accumulators(tc1, tc2: accumulator * accumulator) : accumulator =
     seconds_per_liquidity = tc1.seconds_per_liquidity - tc2.seconds_per_liquidity;
 }
 
-let tickAccumulatorsInside (st, cfmm_address: Cfmm.storage * address) (low_ti, high_ti: Cfmm.tick_index * Cfmm.tick_index) : accumulator =
+let tickAccumulatorsInside(st, _timestamp_in_seconds, cumul_buffer: Cfmm.storage * int * Cfmm.oracle_view_param) (low_ti, high_ti: Cfmm.tick_index * Cfmm.tick_index) : accumulator =
     let low_state = match Big_map.find_opt low_ti st.ticks with
     | Some ts -> ts
     | None -> failwith("tickAccumulatorsInside: unknown low tick_index")
@@ -483,6 +483,9 @@ let tickAccumulatorsInside (st, cfmm_address: Cfmm.storage * address) (low_ti, h
     let buffer_times_reversed = apply_on_cumulatives_buffer_reversed(st.cumulatives_buffer, get_time_from_cumulatives_buffer) in
     let test_timestamp = Option.unopt (List.head_opt buffer_times_reversed) in
     let test_timestamp_int : int = test_timestamp - (0: timestamp) in
+    // let () = Test.log("test_timestamp_int", test_timestamp_int) in
+    // let () = Test.log("timestamp_in_seconds", timestamp_in_seconds) in
+
     // TODO ( should use Tezos.get_now())
     // GET CURRENT TIME
     // let currentTime = Tezos.get_now() in
@@ -490,8 +493,13 @@ let tickAccumulatorsInside (st, cfmm_address: Cfmm.storage * address) (low_ti, h
 
 
     // calls the View "Observe" to get CumulativesValue (cvTickCumulative, cvSecondsPerLiquidityCumulative)
-    let ret_list = call_view_observe([test_timestamp], cfmm_address) in
-    let ret : Cfmm.cumulatives_value = Option.unopt (List.head_opt ret_list) in
+    // let current_time = Tezos.get_now() in
+    // let () = Observer_helper.call_observe_success((cfmm_address, [current_time]), observer.contr) in
+    // let ret_list = Test.get_storage observer.taddr in
+    // let () = Test.log("[tickAccumulatorsInside] observer helper", (current_time - (0: timestamp)),  ret_list) in
+
+
+    let ret : Cfmm.cumulatives_value = Option.unopt (List.head_opt cumul_buffer) in
     let cvTickCumulative = ret.tick_cumulative in
     let cvSecondsPerLiquidityCumulative = ret.seconds_per_liquidity_cumulative in
     // let () = Test.log("cvSecondsPerLiquidityCumulative") in
@@ -726,7 +734,7 @@ let checkCumulativesBufferInvariants(s: Cfmm.storage) : unit =
 // must equal the global accumulated value.
 // E.g.: if the ticks [i1, i2, i3, i4] have been initialized, then:
 //   fee_growth == fee_growth_inside(i1, i2) + fee_growth_inside(i2, i3) + fee_growth_inside(i3, i4)
-let checkAccumulatorsInvariants(s, cfmm_address : Cfmm.storage * address) : unit =
+let checkAccumulatorsInvariants(s, timestamp_in_seconds, cumul_buffer : Cfmm.storage * int * Cfmm.oracle_view_param) : unit =
     // retrieve ticks indices (FROM LEFT TO RIGHT)
     let startTickIndex : Cfmm.tick_index = { i=-1048575 } in
     let stop_condition(p: Cfmm.tick_index) : bool = (p.i = 1048576) in
@@ -735,7 +743,7 @@ let checkAccumulatorsInvariants(s, cfmm_address : Cfmm.storage * address) : unit
     let all_indices_ltr = Utils.List.rev all_indices_rtl in
 
     // Compute sum of all accumulators inside
-    let compute_accumulators_inside = tickAccumulatorsInside(s, cfmm_address) in
+    let compute_accumulators_inside = tickAccumulatorsInside(s, timestamp_in_seconds, cumul_buffer) in
     let all_values = Utils.List.mapAdjacent(all_indices_ltr, compute_accumulators_inside) in
     let sum_accumulators_inside = List.fold add_accumulators all_values empty_accumulator in
     // let () = Test.log(sum_accumulators_inside) in
@@ -747,19 +755,27 @@ let checkAccumulatorsInvariants(s, cfmm_address : Cfmm.storage * address) : unit
     let buffer_times_reversed = apply_on_cumulatives_buffer_reversed(s.cumulatives_buffer, get_time_from_cumulatives_buffer) in
     let test_timestamp = Option.unopt (List.head_opt buffer_times_reversed) in
     let test_timestamp_int : int = test_timestamp - (0: timestamp) in
+    
+    /////////////////////////////////////////////////////////////////////////////
     // let current_time = Tezos.get_now() in
-    let ret_list = call_view_observe([test_timestamp], cfmm_address) in
-    let ret : Cfmm.cumulatives_value = Option.unopt (List.head_opt ret_list) in
+    // let () = Observer_helper.call_observe_success((cfmm_address, [current_time]), observer.contr) in
+    // let ret_list = Test.get_storage observer.taddr in
+    // let () = Test.log("observer helper", (current_time - (0: timestamp)),  ret_list) in
+    ///////////////////////////////////////////////////////////////////////////////
+
+    let ret : Cfmm.cumulatives_value = Option.unopt (List.head_opt cumul_buffer) in
     let cvTickCumulative = ret.tick_cumulative in
     let cvSecondsPerLiquidityCumulative = ret.seconds_per_liquidity_cumulative in
 
     let fee_growth_int = {x = {x128=int(s.fee_growth.x.x128)} ; y = {x128=int(s.fee_growth.y.x128)} } in
     let globalAccumulators  : accumulator = {
-        seconds = test_timestamp_int;
+        seconds = test_timestamp_int; //timestamp_in_seconds; //test_timestamp_int;
         tick_cumulative = cvTickCumulative;
         fee_growth = fee_growth_int;
         seconds_per_liquidity = int(cvSecondsPerLiquidityCumulative.x128);
     } in
+    // let () = Test.log(globalAccumulators) in
+    // let () = Test.log(sum_accumulators_inside) in
     let () = assert_equal_accumulators(globalAccumulators, sum_accumulators_inside) in
     ()
 
@@ -771,15 +787,23 @@ let checkBalanceInvariants(_s : Cfmm.storage) : unit =
     // ---> maybe simulate the update_position entrypoint
     ()
 
-let check_all_invariants(taddr, cfmm_address : taddr * address) : unit =
+let check_all_invariants_with_buffer(taddr, timestamp_in_seconds, cumul_buffer : taddr * int * Cfmm.oracle_view_param) : unit =
     let s = Test.get_storage taddr in
     let _ : unit = checkStorageInvariants(s) in
     let _ : unit = checkTickInvariants(s) in 
     let _ : unit = checkTickMapInvariants(s) in
     let _ : unit = checkCumulativesBufferInvariants(s) in
-    let _ : unit = checkAccumulatorsInvariants(s, cfmm_address) in
+    let _ : unit = checkAccumulatorsInvariants(s, timestamp_in_seconds, cumul_buffer) in
     let _ : unit = checkBalanceInvariants(s) in
     ()
+
+let check_all_invariants(taddr, cfmm_address, observer : taddr * address * Observer_helper.originated) : unit =
+    let current_time = Tezos.get_now() in
+    let () = Observer_helper.call_observe_success((cfmm_address, [current_time]), observer.contr) in
+    let cumul_buffer = Test.get_storage observer.taddr in
+    // let () = Test.log("[check_all_invariants] observer helper", (current_time - (0: timestamp)),  cumul_buffer) in
+    check_all_invariants_with_buffer(taddr, current_time - (0:timestamp), cumul_buffer)
+
 
 let checkCumulativesBufferTimeInvariants(_s : Cfmm.storage) : unit =
     ()

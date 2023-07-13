@@ -93,40 +93,39 @@ let test_success_adding_twice =
     let () = ExtendedFA2_helper.update_operators_success([Add_operator({owner=user1; operator=cfmm2.addr; token_id=0n})], tokenY.contr) in
 
     // CFMM1 : set_position with 1000000 and update_position with 1000000
-    let param : Cfmm.set_position_param = Cfmm_helper.generate_set_position_param(1000000n, (-15, 10)) in
+    let liquidity_delta = 1000000n in 
+    let time_before_cfmm1_set = Tezos.get_now() in
+    let param : Cfmm.set_position_param = Cfmm_helper.generate_set_position_param(liquidity_delta, (-15, 10)) in
     let () = Cfmm_helper.set_position_success(param, 0tez, cfmm1.contr) in
-    let param_update : Cfmm.update_position_param = Cfmm_helper.generate_update_position_param(0n, 1000000, user1, 500n, 750n) in
+    let time_before_cfmm1_update = Tezos.get_now() in
+    let param_update : Cfmm.update_position_param = Cfmm_helper.generate_update_position_param(0n, int(liquidity_delta), user1, 500n, 750n) in
     let () = Cfmm_helper.update_position_success(param_update, 0tez, cfmm1.contr) in
     // CFMM2 : set_position with 2000000
-    let param : Cfmm.set_position_param = Cfmm_helper.generate_set_position_param(2000000n, (-15, 10)) in
+    let param : Cfmm.set_position_param = Cfmm_helper.generate_set_position_param(2n * liquidity_delta, (-15, 10)) in
     let () = Cfmm_helper.set_position_success(param, 0tez, cfmm2.contr) in
     
     let s_cfmm1 = Test.get_storage cfmm1.taddr in
     let s_cfmm2 = Test.get_storage cfmm2.taddr in
 
-    // let () = Test.log(s_cfmm1.ticks) in
-    // let () = Test.log(s_cfmm2.ticks) in
     // Verify Storage
     // TODO: inside assert_storage_equal, compare seconds_outside does not match !! 
     let () = Cfmm_helper.assert_storage_equal(s_cfmm1, s_cfmm2) in
 
-    
-    // // Tick verification
-    // let tick_min = {i=Cfmm_helper.minTickIndex} in
-    // let tick_lower = {i=-15} in
-    // let tick_upper = {i=10} in
-    // let tick_max = {i=Cfmm_helper.maxTickIndex} in
-    // let same_tick_min = Cfmm_helper.assert_tick_equal(cfmm1.taddr, tick_min, cfmm2.taddr) in
-    // let same_tick_lower = Cfmm_helper.assert_tick_equal(cfmm1.taddr, tick_lower, cfmm2.taddr) in
-    // let same_tick_upper = Cfmm_helper.assert_tick_equal(cfmm1.taddr, tick_upper, cfmm2.taddr) in
-    // let same_tick_max = Cfmm_helper.assert_tick_equal(cfmm1.taddr, tick_max, cfmm2.taddr) in
-    // let same_ticks = same_tick_max && same_tick_upper && same_tick_lower && same_tick_min in
-    // let () = assert(same_ticks) in 
+    // TODO (Test framework cannot batch transactions so cumulative buffers are different)
+    // let () = Test.log(s_cfmm1.cumulatives_buffer) in
+    // let () = Test.log("=============================") in
+    // let () = Test.log(s_cfmm2.cumulatives_buffer) in
+    // let () = assert(s_cfmm1.cumulatives_buffer = s_cfmm2.cumulatives_buffer) in 
 
-    // // let () = Test.log(s_cfmm1.cumulatives_buffer) in
-    // // let () = Test.log(s_cfmm2.cumulatives_buffer) in
-    // //let () = assert(s_cfmm1.cumulatives_buffer = s_cfmm2.cumulatives_buffer) in // TODO
-
+    // Verify CFMM1 Cumulative Buffer (spl.sum and spl.block_start_liquidity_value)
+    let time_elapsed = abs(time_before_cfmm1_update - time_before_cfmm1_set) in
+    let expected_spl_sum = (Bitwise.shift_left time_elapsed 128n) / liquidity_delta in
+    let cfmm1_spl = match Big_map.find_opt s_cfmm1.cumulatives_buffer.first s_cfmm1.cumulatives_buffer.map with
+    | Some v -> v
+    | None -> failwith "failed to parse cumulative buffer"
+    in
+    let () = assert(expected_spl_sum = cfmm1_spl.spl.sum.x128) in
+    let () = assert(liquidity_delta = cfmm1_spl.spl.block_start_liquidity_value) in
 
     let cfmm_1_balance_x = SFT_helper.get_user_balance(tokenX.taddr, cfmm1.addr) in
     let () = SFT_helper.assert_user_balance_in_range(tokenX.taddr, cfmm2.addr, cfmm_1_balance_x, 1n) in
@@ -350,7 +349,8 @@ let test_fees_are_proportional_to_liquidity =
     let (fee_sum_x, fee_sum_y) = List.fold apply_swap_sum_fees swaps (0n, 0n) in
 
     // CHECK INVARIANTS
-    let () = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr) in
+    let observer = Bootstrap.boot_observe_consumer(0tez) in
+    let () = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr, observer) in
 
     // COLLECT FEES
     let () = Cfmm_helper.collectFees(liquidityProvider, 0n, feeReceiver1, cfmm.contr) in
@@ -365,7 +365,8 @@ let test_fees_are_proportional_to_liquidity =
     let () = ExtendedFA2_helper.assert_user_balance_in_range(tokenY.taddr, feeReceiver2, fee_sum_y * 3n / 4n, 1n) in
 
     // CHECK INVARIANTS
-    let () = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr) in
+    let observer = Bootstrap.boot_observe_consumer(0tez) in
+    let () = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr, observer) in
     ()
 
 // test_LPs_do_not_receive_past_fees
@@ -454,7 +455,8 @@ let test_LPs_do_not_receive_past_fees =
     let (fee_sum_x_after, fee_sum_y_after) = List.fold apply_swap_sum_fees swaps (0n, 0n) in
 
     // CHECK INVARIANTS
-    let () = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr) in
+    let observer = Bootstrap.boot_observe_consumer(0tez) in
+    let () = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr, observer) in
 
     // COLLECT FEES
     let () = Cfmm_helper.collectFees(liquidityProvider, 0n, feeReceiver1, cfmm.contr) in
@@ -469,7 +471,8 @@ let test_LPs_do_not_receive_past_fees =
     let () = ExtendedFA2_helper.assert_user_balance_in_range(tokenY.taddr, feeReceiver2, fee_sum_y_after / 2n, 1n) in
 
     // CHECK INVARIANTS
-    let () = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr) in
+    let observer = Bootstrap.boot_observe_consumer(0tez) in
+    let () = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr, observer) in
     ()
 
 // test_fees_are_discounted
@@ -539,8 +542,7 @@ let test_fees_are_discounted =
     // UPDATE POSITION
     let () = Test.set_source liquidityProvider in
     let param_update : Cfmm.update_position_param = Cfmm_helper.generate_update_position_param(0n, int(liquidity), feeReceiver, 5000000n, 5000000n) in
-    let r = Cfmm_helper.update_position(param_update, 0tez, cfmm.contr) in
-    let () = Test.log(r) in
+    let () = Cfmm_helper.update_position_success(param_update, 0tez, cfmm.contr) in
     let () = Cfmm_helper.assert_liquidity(cfmm.taddr, liquidity * 2n) in
 
     // VERIFY BALANCES
@@ -617,12 +619,12 @@ let test_ticks_are_updated =
 
     // -- Advance the time a few secs to make sure accumulators
     // -- like `seconds_per_liquidity_cumulative` change to non-zero values.
-    let before_time = Tezos.get_now() in
-    let () = Test.bake_until_n_cycle_end 1n in
-    let after_time = Tezos.get_now() in
-    let waitTime = abs(after_time - before_time) in
-    let () = Test.log("waitTime") in
-    let () = Test.log(waitTime) in
+    // let before_time = Tezos.get_now() in
+    // let () = Test.bake_until_n_cycle_end 1n in
+    // let after_time = Tezos.get_now() in
+    // let waitTime = abs(after_time - before_time) in
+    // let () = Test.log("waitTime") in
+    // let () = Test.log(waitTime) in
 
     // -- Place a swap big enough to cross tick `50` and therefore
     // -- change the value of the `*_outside` fields to something other than zero.

@@ -5,7 +5,7 @@ help:
 	awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
 ifndef LIGO
-LIGO=docker run --platform linux/amd64 -u $(id -u):$(id -g) --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.67.1
+LIGO=docker run --platform linux/amd64 -u $(id -u):$(id -g) --rm -v "$(PWD)":"$(PWD)" -w "$(PWD)" ligolang/ligo:0.68.0
 endif
 # ^ use LIGO en var bin if configured, otherwise use docker
 
@@ -27,20 +27,20 @@ install-ligo-lib:
 compile: ## compile contracts to Michelson
 	@mkdir -p compiled
 	@$(call compile,../lib/cfmm/main_fa2_fa12.mligo,main_fa2_fa12.tz,)
-	@$(call compile,../lib/cfmm/main_fa2_fa12.mligo,main_fa2_fa12.tz,--michelson-format json)
+	@$(call compile,../lib/cfmm/main_fa2_fa12.mligo,main_fa2_fa12.json,--michelson-format json)
 	@$(call compile,../lib/cfmm/main_fa2_fa2.mligo,main_fa2_fa2.tz,)
-	@$(call compile,../lib/cfmm/main_fa2_fa2.mligo,main_fa2_fa2.tz,--michelson-format json)
+	@$(call compile,../lib/cfmm/main_fa2_fa2.mligo,main_fa2_fa2.json,--michelson-format json)
 	@$(call compile,../lib/cfmm/main_fa2_ctez.mligo,main_fa2_ctez.tz,)
-	@$(call compile,../lib/cfmm/main_fa2_ctez.mligo,main_fa2_ctez.tz,--michelson-format json)
+	@$(call compile,../lib/cfmm/main_fa2_ctez.mligo,main_fa2_ctez.json,--michelson-format json)
 	@$(call compile,../lib/cfmm/main_fa12_fa12.mligo,main_fa12_fa12.tz,)
-	@$(call compile,../lib/cfmm/main_fa12_fa12.mligo,main_fa12_fa12.tz,--michelson-format json)
+	@$(call compile,../lib/cfmm/main_fa12_fa12.mligo,main_fa12_fa12.json,--michelson-format json)
 	@$(call compile,../lib/cfmm/main_fa12_fa2.mligo,main_fa12_fa2.tz,)
-	@$(call compile,../lib/cfmm/main_fa12_fa2.mligo,main_fa12_fa2.tz,--michelson-format json)
+	@$(call compile,../lib/cfmm/main_fa12_fa2.mligo,main_fa12_fa2.json,--michelson-format json)
 	@$(call compile,../lib/cfmm/main_fa12_ctez.mligo,main_fa12_ctez.tz,)
-	@$(call compile,../lib/cfmm/main_fa12_ctez.mligo,main_fa12_ctez.tz,--michelson-format json)
+	@$(call compile,../lib/cfmm/main_fa12_ctez.mligo,main_fa12_ctez.json,--michelson-format json)
 
-test: ## run CFMM LIGO tests 
-	test-ligo-cfmm 
+test: test-ligo-cfmm ## run CFMM LIGO tests 
+	 
 
 ##@Contracts - Run CFMM LIGO tests 
 ## For example : 

@@ -583,17 +583,20 @@ let s = update_timed_cumulatives s in
 | Observe p -> observe s p
 | Increase_observation_count n -> increase_observation_count(s, n)
 
-[@view] let v_get_position_info (p, s : position_id * storage) : position_info =
-    let position = get_position(p, s.positions) in
-    {
-        liquidity = position.liquidity;
-        owner = position.owner;
-        lower_tick_index = position.lower_tick_index;
-        upper_tick_index = position.upper_tick_index;
-    }
+[@view] let v_get_constants (_p, s : unit * storage) : constants =
+    s.constants
 
-[@view] let v_observe (p, s : timestamp list * storage) : oracle_view_param =
-    List.map (get_cumulatives s.cumulatives_buffer) p
+// [@view] let v_get_position_info (p, s : position_id * storage) : position_info =
+//     let position = get_position(p, s.positions) in
+//     {
+//         liquidity = position.liquidity;
+//         owner = position.owner;
+//         lower_tick_index = position.lower_tick_index;
+//         upper_tick_index = position.upper_tick_index;
+//     }
 
-[@view] let v_snapshot_cumulatives_inside (p, s : snapshot_cumulatives_inside_view_param * storage) : cumulatives_inside_snapshot =
-    compute_snapshot_cumulatives_inside(p, s)
+// [@view] let v_observe (p, s : timestamp list * storage) : oracle_view_param =
+//     List.map (get_cumulatives s.cumulatives_buffer) p
+
+// [@view] let v_snapshot_cumulatives_inside (p, s : snapshot_cumulatives_inside_view_param * storage) : cumulatives_inside_snapshot =
+//     compute_snapshot_cumulatives_inside(p, s)

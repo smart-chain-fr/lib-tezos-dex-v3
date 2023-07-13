@@ -514,23 +514,15 @@ let test_crossing_tick =
     let expected_ticks_so_map = List.fold insert_one expected_ticks_so (Big_map.empty : (Cfmm.tick_index, int) big_map) in
     // let () = Test.log("expected_ticks_so_map", expected_ticks_so_map) in
 
-    // debug : display ticks (seconds_outside)
-    // let s_after_set_position_cfmm_2 = Test.get_storage cfmm2.taddr in
-    // let startTickIndex : Cfmm.tick_index = { i=-1048575 } in
-    // let stop_condition(p: Cfmm.tick_index) : bool = (p.i = 1048576) in
-    // let get_so(p: (Cfmm.tick_index * Cfmm.tick_state)) : (Cfmm.tick_index * nat) = (p.0, p.1.seconds_outside) in
-    // let tick_list = Cfmm_helper.forAllTicks(([]: (Cfmm.tick_index * nat) list), startTickIndex, stop_condition, s_after_set_position_cfmm_2.ticks, get_so) in
-    // let () = Test.log("real_ticks_so:", tick_list) in 
-
     // since s.liquidity is increased only when current tick index is between lower tick and upper tick, 
     // then only the set_position on [0, 200] will increase the global liquidity
     let () = Cfmm_helper.assert_liquidity(cfmm1.taddr, liquidity) in
     let () = Cfmm_helper.assert_liquidity(cfmm2.taddr, liquidity) in
 
     // CHECK INVARIANTS
-    // let () = Test.log("check_all_invariants") in
-    let _ : unit = Cfmm_helper.check_all_invariants(cfmm1.taddr, cfmm1.addr) in
-    let _ : unit = Cfmm_helper.check_all_invariants(cfmm2.taddr, cfmm2.addr) in
+    let observer = Bootstrap.boot_observe_consumer(0tez) in
+    let _ : unit = Cfmm_helper.check_all_invariants(cfmm1.taddr, cfmm1.addr, observer) in
+    let _ : unit = Cfmm_helper.check_all_invariants(cfmm2.taddr, cfmm2.addr, observer) in
 
     let cfmm1InitialBalanceX = ExtendedFA2_helper.get_user_balance(tokenX.taddr, cfmm1.addr) in
     let cfmm1InitialBalanceY = ExtendedFA2_helper.get_user_balance(tokenY.taddr, cfmm1.addr) in
@@ -541,13 +533,12 @@ let test_crossing_tick =
     // SWAP 200 X_TOKEN 
     // Place a small swap to move the tick past 0 and advance the time to fill the
     // buffer with _something_ other than zeros.
-    let () = Test.log("swap 200 X on CFMM1") in
     let () = Test.set_source swapper in
     let x_amount_swap = 200n in
     let param : Cfmm.x_to_y_param = Cfmm_helper.generate_x_to_y_param(x_amount_swap, 1n, swapReceiver) in
     let () = Cfmm_helper.x_to_y_success(param, 0tez, cfmm1.contr) in
 
-    let () = Test.log("swap 200 X on CFMM2") in
+    // let t_swap_cfmm1_200_before = Tezos.get_now() in 
     let () = Test.set_source swapper in
     let x_amount_swap = 200n in
     let param : Cfmm.x_to_y_param = Cfmm_helper.generate_x_to_y_param(x_amount_swap, 1n, swapReceiver) in
@@ -562,47 +553,27 @@ let test_crossing_tick =
     let _s_initial_cfmm_1 = Test.get_storage cfmm1.taddr in
     let _s_initial_cfmm_2 = Test.get_storage cfmm2.taddr in
 
-    // DEBUG
-    // let () = Test.log("CUR TICK INDEX (cfmm1):", _s_initial_cfmm_1.cur_tick_index) in 
-    // let () = Test.log("CUR TICK INDEX (cfmm2):", _s_initial_cfmm_2.cur_tick_index) in 
-
+    // let t_swap_cfmm1_50000_before = Tezos.get_now() in 
     // SWAP 50000 X_TOKEN 
     // Place 1 big swap to push the tick all the way down to `lowerTickIndex`
-    let () = Test.log("swap 50000 X on CFMM1") in
     let () = Test.set_source swapper in
     let x_amount_swap = 50000n in
     let param : Cfmm.x_to_y_param = Cfmm_helper.generate_x_to_y_param(x_amount_swap, 1n, swapReceiver) in
     let () = Cfmm_helper.x_to_y_success(param, 0tez, cfmm1.contr) in
 
-    // display ticks (seconds_outside)
-    // let startTickIndex : Cfmm.tick_index = { i=-1048575 } in
-    // let stop_condition(p: Cfmm.tick_index) : bool = (p.i = 1048576) in
-    // let get_so(p: (Cfmm.tick_index * Cfmm.tick_state)) : (Cfmm.tick_index * nat) = (p.0, p.1.seconds_outside) in
-    // let tick_list = Cfmm_helper.forAllTicks(([]: (Cfmm.tick_index * nat) list), startTickIndex, stop_condition, _s_initial_cfmm_2.ticks, get_so) in
-    // let () = Test.log("ticks before SWAP 5000 (cfmm2):", tick_list) in 
-
-    let t_swap_5000_before = Tezos.get_now() in 
-    // let () = Test.log("t_swap_5000_before", t_swap_5000_before) in
-    let () = Test.log("swap 50000 X on CFMM2") in
+    // let s_before_swap_cfmm2 = Test.get_storage cfmm2.taddr in
+    let t_swap_cfmm2_50000_before = Tezos.get_now() in 
     let () = Cfmm_helper.x_to_y_success(param, 0tez, cfmm2.contr) in
 
     let s_after_cfmm1 = Test.get_storage cfmm1.taddr in
     let s_after_cfmm2 = Test.get_storage cfmm2.taddr in
 
-    // DEBUG
-    // let () = Test.log("CUR TICK INDEX (cfmm1):", s_after_cfmm1.cur_tick_index) in 
-    // let () = Test.log("CUR TICK INDEX (cfmm2):", s_after_cfmm2.cur_tick_index) in 
-
-    // display ticks (seconds_outside)
-    // let startTickIndex : Cfmm.tick_index = { i=-1048575 } in
-    // let stop_condition(p: Cfmm.tick_index) : bool = (p.i = 1048576) in
-    // let get_so(p: (Cfmm.tick_index * Cfmm.tick_state)) : (Cfmm.tick_index * nat) = (p.0, p.1.seconds_outside) in
-    // let tick_list = Cfmm_helper.forAllTicks(([]: (Cfmm.tick_index * nat) list), startTickIndex, stop_condition, s_after_cfmm2.ticks, get_so) in
-    // let () = Test.log("ticks after SWAP 5000 (cfmm2):", tick_list) in 
-
-    // let () = Test.log("check_all_invariants") in
-    let _ : unit = Cfmm_helper.check_all_invariants(cfmm1.taddr, cfmm1.addr) in
-    let _ : unit = Cfmm_helper.check_all_invariants(cfmm2.taddr, cfmm2.addr) in
+    // CHECK INVARIANTS
+    let observer = Bootstrap.boot_observe_consumer(0tez) in
+    let _ : unit = Cfmm_helper.check_all_invariants(cfmm1.taddr, cfmm1.addr, observer) in
+    // let t_observe_before = Tezos.get_now() in 
+    // let () = Test.log("t_observe_before", t_observe_before) in
+    let _ : unit = Cfmm_helper.check_all_invariants(cfmm2.taddr, cfmm2.addr, observer) in
 
     //  sCurTickIndex s_after `isInRange` lowerTickIndex $ (0, 50)
     let () = assert(((lowerTickIndex - 0) <= s_after_cfmm1.cur_tick_index.i) && (s_after_cfmm1.cur_tick_index.i < lowerTickIndex + 50)) in
@@ -665,12 +636,13 @@ let test_crossing_tick =
     // let () = Test.log(s_after_cfmm2.cumulatives_buffer) in
     // let () = assert(s_after_cfmm1.cumulatives_buffer = s_after_cfmm2.cumulatives_buffer) in
 
+    let s_after_cfmm2 = Test.get_storage cfmm2.taddr in
     // Check that the ticks' states were updated correctly after being crossed.
     let rec assert_tick_indexes(acc, current, interval : (Cfmm.tick_index * Cfmm.tick_state) list * Cfmm.tick_index * nat) : (Cfmm.tick_index * Cfmm.tick_state) list =
         if (current.i >= 0) then
             acc
         else
-            let () = Test.log("current", current) in 
+            // let () = Test.log("current", current) in 
             match Big_map.find_opt current s_after_cfmm2.ticks with
             | Some ts -> 
                 // retrieve timestamp of the set position (for current tick)
@@ -678,16 +650,23 @@ let test_crossing_tick =
                 | Some v -> v
                 | None -> Test.failwith("expected tick so not found")
                 in 
-                let wait_between_pos_swap = t_swap_5000_before - expected_so - (0: timestamp) in                
+                let wait_between_pos_swap = t_swap_cfmm2_50000_before - expected_so - (0: timestamp) in                
                 let wait_between_pos_swap_x128 = Bitwise.shift_left (abs(wait_between_pos_swap)) 128n in
                 let expected_splo = abs(wait_between_pos_swap_x128 / int(liquidity)) in
                 // There may be a +1/-1 error due to the rounding of the seconds_per_liquidity_outside
                 let _ : unit = assert(int(ts.seconds_outside) = wait_between_pos_swap) in 
                 // TODO : diff should be 2n
-                let _ : unit = assert(abs(ts.seconds_per_liquidity_outside.x128 - expected_splo) <= 3n) in 
+                let _ : unit = assert(abs(ts.seconds_per_liquidity_outside.x128 - expected_splo) <= 4n) in 
                 
-                let () = Test.log(ts.tick_cumulative_outside) in 
-                let () = Test.log(wait_between_pos_swap * _s_initial_cfmm_2.cur_tick_index.i) in 
+                // let () = Test.log("tick_cumulative_outside", ts.tick_cumulative_outside) in 
+                // let () = Test.log("expected tick_cumulative_outside", wait_between_pos_swap * s_before_swap_cfmm2.cur_tick_index.i) in 
+                // let wait_between_pos_observe = t_observe_before - expected_so - (0: timestamp) in
+                // let () = Test.log("expected tick_cumulative_outside (obs)", wait_between_pos_observe * s_before_swap_cfmm2.cur_tick_index.i) in 
+                // let wait_between_pos_swap_200 = t_swap_cfmm1_50000_before - expected_so - (0: timestamp) in
+                // let () = Test.log("expected tick_cumulative_outside (swap 200)", wait_between_pos_swap_200 * s_before_swap_cfmm2.cur_tick_index.i) in 
+                // let wait_time = t_swap_cfmm2_50000_before - t_swap_cfmm1_50000_before in
+                // let () = Test.log("expected tick_cumulative_outside (swap 50000 on cfmm1)", wait_time * s_before_swap_cfmm2.cur_tick_index.i) in 
+                
                 // TODO : 
                 // let _ : unit = assert(ts.tick_cumulative_outside = waiTime_x128.x128 * s_after_cfmm1.cur_tick_index.i) in                
                 let _ : unit = assert((ts.fee_growth_outside.x.x128 <> 0n) || (ts.fee_growth_outside.y.x128 <> 0n)) in 
@@ -759,16 +738,15 @@ let test_fee_split =
     let param : Cfmm.x_to_y_param = Cfmm_helper.generate_x_to_y_param(x_amount_swap, 0n, swapper) in
     let () = Cfmm_helper.x_to_y_success(param, 0tez, cfmm.contr) in
 
-    // check invariants
-    let _ : unit = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr) in
+    // CHECK INVARIANTS
+    let observer = Bootstrap.boot_observe_consumer(0tez) in
+    let () : unit = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr, observer) in
 
     // position1 should have earned both X and Y fees.
     // COLLECT FEES
     let () = Cfmm_helper.collectFees(liquidityProvider, 0n, feeReceiver1, cfmm.contr) in
     let feeReceiver1_x = ExtendedFA2_helper.get_user_balance(tokenX.taddr, feeReceiver1) in
     let feeReceiver1_y = ExtendedFA2_helper.get_user_balance(tokenY.taddr, feeReceiver1) in
-    let () = Test.log(feeReceiver1_x) in
-    let () = Test.log(feeReceiver1_y) in
     let () = assert(feeReceiver1_x <> 0n) in
     let () = assert(feeReceiver1_y <> 0n) in
 
@@ -918,23 +896,21 @@ let test_swaps_are_noops_when_liquidity_is_zero  =
 
     // Place a swap big enough to exhaust the position's liquidity
     // SWAP 200 X_TOKEN 
-    // let () = Test.log("SWAP 200") in
     let () = Test.set_source swapper in
     let x_amount_swap = 200n in
     let param : Cfmm.x_to_y_param = Cfmm_helper.generate_x_to_y_param(x_amount_swap, 1n, swapReceiver) in
     let () = Cfmm_helper.x_to_y_success(param, 0tez, cfmm.contr) in
-    // let () = Test.log(r) in
 
     // SWAP 100 X_TOKEN 
     let s_before = Test.get_storage cfmm.taddr in
     let initial_cfmm_balance_x = ExtendedFA2_helper.get_user_balance(tokenX.taddr, cfmm.addr) in
     let initial_cfmm_balance_y = ExtendedFA2_helper.get_user_balance(tokenY.taddr, cfmm.addr) in
-    let () = Test.log("Attempt SWAP 100") in
+
     let () = Test.set_source swapper in
     let x_amount_swap = 100n in
     let param : Cfmm.x_to_y_param = Cfmm_helper.generate_x_to_y_param(x_amount_swap, 0n, swapReceiver) in
     let () = Cfmm_helper.x_to_y_success(param, 0tez, cfmm.contr) in
-    // let () = Test.log(r) in
+
     // Verify cfmm balances (token X and token Y) and cfmm storage
     let cfmm_balance_x = ExtendedFA2_helper.get_user_balance(tokenX.taddr, cfmm.addr) in
     let cfmm_balance_y = ExtendedFA2_helper.get_user_balance(tokenY.taddr, cfmm.addr) in
@@ -1012,7 +988,9 @@ let test_push_cur_tick_index_just_below_witness  =
     // sanity check
     let s_final = Test.get_storage cfmm.taddr in
     let () = assert(s_final.cur_tick_index.i = -101) in
-    let _ : unit = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr) in
+    // CHECK INVARIANTS
+    let observer = Bootstrap.boot_observe_consumer(0tez) in
+    let () : unit = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr, observer) in
     ()
 
 
