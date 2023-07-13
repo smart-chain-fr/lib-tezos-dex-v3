@@ -3,6 +3,7 @@
 #import "../helpers/sft.mligo" "SFT_helper"
 #import "../helpers/fa12.mligo" "FA12_helper"
 #import "../helpers/config.mligo" "Config_helper"
+#import "../helpers/observe_consumer.mligo" "ObserveConsumer_helper"
 
 
 let boot_accounts () =
@@ -28,6 +29,14 @@ let boot_cfmm_by_config (config, x_token, y_token, tick_spacing, fee_bps, proto_
         config, Cfmm_helper.base_storage(x_token, y_token, tick_spacing, fee_bps, proto_fee_bps), contract_balance
     ) in
     cfmm
+
+(* Boostrapping of the test environment for observe_consumer *)
+let boot_observe_consumer (contract_balance : tez) =
+    let observer = ObserveConsumer_helper.originate(
+        ObserveConsumer_helper.base_storage(), 
+        contract_balance
+    ) in
+    observer
 
 
 (* Boostrapping of the test environment for Token *)

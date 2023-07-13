@@ -3,3 +3,4 @@ _esy/
 esy.lock/
 compiled
 node_modules
+test/token/*.tz
