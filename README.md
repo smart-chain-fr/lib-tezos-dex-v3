@@ -12,7 +12,7 @@ TWAP has not been verified yet !
 This library must be specified in the dependencies of your project. this is done by installing the dex-v3 package.
 The package.json file must have the following dependency
 ```
-{ "dependencies": { "dex-v3": "^0.1.1" } }
+{ "dependencies": { "dex-v3": "^0.1.2" } }
 ```
 
 This library can be used to a liquidity pool (uniswap-v3-like) very easily

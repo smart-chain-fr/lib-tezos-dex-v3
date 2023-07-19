@@ -18,12 +18,6 @@ let boot_accounts () =
     accounts
 
 (* Boostrapping of the test environment for CFMM *)
-let boot_cfmm (x_token, y_token, tick_spacing, fee_bps, proto_fee_bps, contract_balance : address * address * nat * nat * nat * tez) =
-    let cfmm = Cfmm_helper.originate_from_file(
-        Cfmm_helper.base_storage(x_token, y_token, tick_spacing, fee_bps, proto_fee_bps), contract_balance
-    ) in
-    cfmm
-
 let boot_cfmm_by_config (config, x_token, y_token, tick_spacing, fee_bps, proto_fee_bps, contract_balance : Config_helper.config * address * address * nat * nat * nat * tez) =
     let cfmm = Cfmm_helper.originate_from_file_by_config(
         config, Cfmm_helper.base_storage(x_token, y_token, tick_spacing, fee_bps, proto_fee_bps), contract_balance

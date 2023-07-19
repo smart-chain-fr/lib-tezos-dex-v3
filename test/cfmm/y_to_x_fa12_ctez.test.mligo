@@ -773,8 +773,8 @@ let test_crossing_tick =
                 let wait_between_pos_swap_x128 = Bitwise.shift_left (abs(wait_between_pos_swap)) 128n in
                 let _expected_splo = abs(wait_between_pos_swap_x128 / int(liquidity)) in
                 // There may be a +1/-1 error due to the rounding of the seconds_per_liquidity_outside
-                let () = Test.log(ts.seconds_outside) in
-                let () = Test.log(wait_between_pos_swap) in
+                // let () = Test.log(ts.seconds_outside) in
+                // let () = Test.log(wait_between_pos_swap) in
                 // let _ : unit = assert(abs(ts.seconds_per_liquidity_outside.x128 - expected_splo) <= 2n) in 
                 // let _ : unit = assert(int(ts.seconds_outside) = t_swap_5000_after) in 
                 

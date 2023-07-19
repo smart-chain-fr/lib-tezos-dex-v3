@@ -18,26 +18,24 @@ test = @$(LIGO) run test $(project_root) ./test/$(1)
 
 .PHONY: test compile
 
-install: ## install ligo libraries (FA2, FA1.2 dependencies for testing)
-	install-ligo-lib
-
-install-ligo-lib:
+install:
 	@$(LIGO) install
+
 
 compile: ## compile contracts to Michelson
 	@mkdir -p compiled
-	@$(call compile,../lib/cfmm/main_fa2_fa12.mligo,main_fa2_fa12.tz,)
-	@$(call compile,../lib/cfmm/main_fa2_fa12.mligo,main_fa2_fa12.json,--michelson-format json)
-	@$(call compile,../lib/cfmm/main_fa2_fa2.mligo,main_fa2_fa2.tz,)
-	@$(call compile,../lib/cfmm/main_fa2_fa2.mligo,main_fa2_fa2.json,--michelson-format json)
-	@$(call compile,../lib/cfmm/main_fa2_ctez.mligo,main_fa2_ctez.tz,)
-	@$(call compile,../lib/cfmm/main_fa2_ctez.mligo,main_fa2_ctez.json,--michelson-format json)
-	@$(call compile,../lib/cfmm/main_fa12_fa12.mligo,main_fa12_fa12.tz,)
-	@$(call compile,../lib/cfmm/main_fa12_fa12.mligo,main_fa12_fa12.json,--michelson-format json)
-	@$(call compile,../lib/cfmm/main_fa12_fa2.mligo,main_fa12_fa2.tz,)
-	@$(call compile,../lib/cfmm/main_fa12_fa2.mligo,main_fa12_fa2.json,--michelson-format json)
-	@$(call compile,../lib/cfmm/main_fa12_ctez.mligo,main_fa12_ctez.tz,)
-	@$(call compile,../lib/cfmm/main_fa12_ctez.mligo,main_fa12_ctez.json,--michelson-format json)
+	@$(call compile,../test/dex/main_fa2_fa12.mligo,main_fa2_fa12.tz,)
+	@$(call compile,../test/dex/main_fa2_fa12.mligo,main_fa2_fa12.json,--michelson-format json)
+	@$(call compile,../test/dex/main_fa2_fa2.mligo,main_fa2_fa2.tz,)
+	@$(call compile,../test/dex/main_fa2_fa2.mligo,main_fa2_fa2.json,--michelson-format json)
+	@$(call compile,../test/dex/main_fa2_ctez.mligo,main_fa2_ctez.tz,)
+	@$(call compile,../test/dex/main_fa2_ctez.mligo,main_fa2_ctez.json,--michelson-format json)
+	@$(call compile,../test/dex/main_fa12_fa12.mligo,main_fa12_fa12.tz,)
+	@$(call compile,../test/dex/main_fa12_fa12.mligo,main_fa12_fa12.json,--michelson-format json)
+	@$(call compile,../test/dex/main_fa12_fa2.mligo,main_fa12_fa2.tz,)
+	@$(call compile,../test/dex/main_fa12_fa2.mligo,main_fa12_fa2.json,--michelson-format json)
+	@$(call compile,../test/dex/main_fa12_ctez.mligo,main_fa12_ctez.tz,)
+	@$(call compile,../test/dex/main_fa12_ctez.mligo,main_fa12_ctez.json,--michelson-format json)
 
 test: test-ligo-cfmm ## run CFMM LIGO tests 
 	 
