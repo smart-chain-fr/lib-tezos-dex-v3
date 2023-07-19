@@ -54,6 +54,7 @@ else ifdef CONFIG
 	@$(call test,cfmm/y_to_x_$(CONFIG).test.mligo)
 	@$(call test,cfmm/complex_position_$(CONFIG).test.mligo)
 else
+	@$(call test,cfmm/twap_fa2_fa2.test.mligo)
 	@$(call test,cfmm/set_position_fa2_fa2.test.mligo)
 	@$(call test,cfmm/update_position_fa2_fa2.test.mligo)
 	@$(call test,cfmm/x_to_y_fa2_fa2.test.mligo)
