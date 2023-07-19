@@ -173,7 +173,7 @@ This command will add a dependency in a package.json file.
 
 Here is an example of the resulting package.json file.
 ```
-{ "dependencies": { "dex-v3": "^0.1.0" } }
+{ "dependencies": { "dex-v3": "^0.1.1" } }
 ```
 
 ### Compiling
@@ -185,11 +185,6 @@ make compile
 
 ### Tests
 
-To launch tests (It may take 30-45 minutes)
-```
-make test
-```
-
 One can launch tests on a specific configuration or on a specific file
 CONFIG= fa2_fa12 | fa12_fa2 | fa2_fa2 | fa12_fa12 | fa2_ctez | fa12_ctez | sft_fa2 | sft_fa12
 FILE= set_position_$(CONFIG) | update_position_$(CONFIG) | x_to_y_$(CONFIG) | y_to_x_$(CONFIG) | complex_position_$(CONFIG)
@@ -198,6 +193,10 @@ make test CONFIG=fa12_fa2
 make test FILE=x_to_y_fa2_fa12
 ```
 
+To all launch tests (It may take 30-45 minutes)
+```
+make test
+```
 
 ### Publishing to Ligolang
 
