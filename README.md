@@ -1,10 +1,11 @@
 # lib-tezos-dex-v3
-Library of a Uniswap-v3 implemented in Cameligo
+Library of a liquidity pool (inspired of Uniswap-v3) implemented in Cameligo. It has been originally forked from https://github.com/tezos-checker/segmented-cfmm and upgraded to fit ligo compiler v0.68.0.
 
 ## WARNING
 
-This version is not meant for production purposes.
-TWAP has not been verified yet !
+This version provides some tests in cameligo and helpers which illustrate how to use the library in a ligo test environment.
+
+TWAP has not been fully tested in Cameligo yet, but the original repository provided some haskell tests covering the TWAP.
 
 
 ## How to use this library
@@ -30,18 +31,29 @@ Since the library must handle multiple format (fa2, fa1.2) the transfer format i
 
 For example, let's create a liquidity pool contract between a FA2 (implementing a SemiFungibleToken) and a FA12 (implementing an old school FungibleToken).
 
-- import the library (here we use the configuration fa2_fa12). 
-- define the `main` function (here we use the one provide by the library)
-- (optional) create alias for useful types of the library
+- create a final liquidity pool contract using the library. Let's create the `./test/dex/main_fa2_fa12.mligo` file with following content
+```
+(* Compilation Pragmas *)
+#define X_IS_FA2
+#define DEBUG
+#define ON_CHAIN_VIEWS
+(* Import of the main module *)
+#include "dex-v3/lib/cfmm/main.mligo"
+```
+
+- One can override the `main` function of the liquidity pool contract and add extra entrypoints for example. Let's create a default wrap of the liquidity pool contract.
+    - load the liquidity pool contract 
+    - define the `main` function (here we use the one provide by the library)
+    - create alias for useful types and functions of the library
 
 ```
-#import "dex-v3/lib/cfmm/main_fa2_fa12.mligo" "Dex"
+#import "./dex/main_fa2_fa12.mligo" "Cfmm"
 
-let main = Dex.main
+let main = Cfmm.main
 
-type storage = Dex.storage
-type parameter = Dex.parameter
-type metadata_map = Dex.metadata_map
+type storage = Cfmm.storage
+type parameter = Cfmm.parameter
+type metadata_map = Cfmm.metadata_map
 ```
 
 This basic liquidity pool (let's call it "dex" from now on) needs to be tested. 
@@ -173,7 +185,7 @@ This command will add a dependency in a package.json file.
 
 Here is an example of the resulting package.json file.
 ```
-{ "dependencies": { "dex-v3": "^0.1.1" } }
+{ "dependencies": { "dex-v3": "^0.1.2" } }
 ```
 
 ### Compiling

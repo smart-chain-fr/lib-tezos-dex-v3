@@ -164,7 +164,6 @@ let test_twap_simple =
     // let () = Test.log("sqrt_price (1/1000000)", final_sqrt_price) in
     let final_price = final_sqrt_price * final_sqrt_price / precision in
     let () = Test.log("price (1/1000000)", final_price) in
-   
     ()
 
 
