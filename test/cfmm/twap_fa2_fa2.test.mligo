@@ -52,7 +52,7 @@ let test_twap_simple =
     let t_before_set_position = Tezos.get_now() in 
     let liquidity_delta = 1_000_000n in 
     // SET POSITION by liquidityProvider
-    let () = Test.log("SET_POSITION") in
+    // let () = Test.log("SET_POSITION") in
     let () = Test.set_source liquidityProvider in
     let param : Cfmm.set_position_param = Cfmm_helper.generate_set_position_param(liquidity_delta, (lowerTickIndex, upperTickIndex)) in
     let () = Cfmm_helper.set_position_success(param, 0tez, cfmm.contr) in
@@ -64,25 +64,25 @@ let test_twap_simple =
     | Some ts -> ts
     | None -> Test.failwith("lower tick not initialized")
     in
-    let lowerCumulativesOutside = lower_tick.tick_cumulative_outside in
+    let _lowerCumulativesOutside = lower_tick.tick_cumulative_outside in
     let upper_tick = match Big_map.find_opt {i=upperTickIndex} s_after.ticks with
     | Some ts -> ts
     | None -> Test.failwith("lower tick not initialized")
     in
-    let upperCumulativesOutside = upper_tick.tick_cumulative_outside in
-    let () = Test.log("lowerCumulativesOutside", lowerCumulativesOutside) in
-    let () = Test.log("upperCumulativesOutside", upperCumulativesOutside) in
+    let _upperCumulativesOutside = upper_tick.tick_cumulative_outside in
+    // let () = Test.log("lowerCumulativesOutside", lowerCumulativesOutside) in
+    // let () = Test.log("upperCumulativesOutside", upperCumulativesOutside) in
 
     let t_before_swap = Tezos.get_now() in 
-    let () = Test.log(t_before_swap - (0: timestamp)) in
+    // let () = Test.log(t_before_swap - (0: timestamp)) in
     // SWAP X
-    let () = Test.log("SWAP") in
+    // let () = Test.log("SWAP") in
     let () = Test.set_source swapper in
     let param : Cfmm.x_to_y_param = Cfmm_helper.generate_x_to_y_param(1000n, 0n, swapReceiver) in
-    let r = Cfmm_helper.x_to_y(param, 0tez, cfmm.contr) in
-    let () = Test.log(r) in
+    let _r = Cfmm_helper.x_to_y(param, 0tez, cfmm.contr) in
+    // let () = Test.log(r) in
     let duration = t_before_swap - t_before_set_position in 
-    let () = Test.log("duration", duration) in
+    // let () = Test.log("duration", duration) in
 
    // DEBUG
     let s_after = Test.get_storage cfmm.taddr in
@@ -91,17 +91,17 @@ let test_twap_simple =
     | Some ts -> ts
     | None -> Test.failwith("lower tick not initialized")
     in
-    let lowerCumulativesOutside = lower_tick.tick_cumulative_outside in
+    let _lowerCumulativesOutside = lower_tick.tick_cumulative_outside in
     let upper_tick = match Big_map.find_opt {i=upperTickIndex} s_after.ticks with
     | Some ts -> ts
     | None -> Test.failwith("lower tick not initialized")
     in
-    let upperCumulativesOutside = upper_tick.tick_cumulative_outside in
-    let () = Test.log("lowerCumulativesOutside", lowerCumulativesOutside) in
-    let () = Test.log("upperCumulativesOutside", upperCumulativesOutside) in
+    let _upperCumulativesOutside = upper_tick.tick_cumulative_outside in
+    // let () = Test.log("lowerCumulativesOutside", lowerCumulativesOutside) in
+    // let () = Test.log("upperCumulativesOutside", upperCumulativesOutside) in
 
-    let spl_x128 = (Bitwise.shift_left (abs(duration)) 128n) / liquidity_delta in
-    let () = Test.log("spl_x128", spl_x128) in
+    let _spl_x128 = (Bitwise.shift_left (abs(duration)) 128n) / liquidity_delta in
+    // let () = Test.log("spl_x128", spl_x128) in
 
 
     // // CHECK INVARIANTS
@@ -112,41 +112,33 @@ let test_twap_simple =
     let t_before_observe = Tezos.get_now() in 
     let s_after = Test.get_storage cfmm.taddr in
     let expected_lower_accumulator = Cfmm_helper.initTickAccumulators(cfmm.addr, observer, s_after, lowerTickIndex) in
-    let () = Test.log("expected_lower_accumulator", expected_lower_accumulator) in
+    // let () = Test.log("expected_lower_accumulator", expected_lower_accumulator) in
 
     // DEBUG
     let s_after = Test.get_storage cfmm.taddr in
-    // let () = Test.log(s_after.cumulatives_buffer) in
     let lower_tick = match Big_map.find_opt {i=lowerTickIndex} s_after.ticks with
     | Some ts -> ts
     | None -> Test.failwith("lower tick not initialized")
     in
-    let lowerCumulativesOutside = lower_tick.tick_cumulative_outside in
+    let _lowerCumulativesOutside = lower_tick.tick_cumulative_outside in
     let upper_tick = match Big_map.find_opt {i=upperTickIndex} s_after.ticks with
     | Some ts -> ts
     | None -> Test.failwith("lower tick not initialized")
     in
-    let upperCumulativesOutside = upper_tick.tick_cumulative_outside in
-    let () = Test.log("lowerCumulativesOutside", lowerCumulativesOutside) in
-    let () = Test.log("upperCumulativesOutside", upperCumulativesOutside) in
+    let _upperCumulativesOutside = upper_tick.tick_cumulative_outside in
+    // let () = Test.log("lowerCumulativesOutside", lowerCumulativesOutside) in
+    // let () = Test.log("upperCumulativesOutside", upperCumulativesOutside) in
 
     let spl_x128 = (Bitwise.shift_left (abs(duration)) 128n) / liquidity_delta in
-    let () = Test.log("spl_x128", spl_x128) in
+    // let () = Test.log("spl_x128", spl_x128) in
 
     let duration_obs_swap = t_before_observe - t_before_swap in
-        let () = Test.log("duration_obs_swap", duration_obs_swap) in
+    // let () = Test.log("duration_obs_swap", duration_obs_swap) in
     let spl_obs_swap_x128 = (Bitwise.shift_left (abs(duration_obs_swap)) 128n) / liquidity_delta in
-    let () = Test.log("spl_obs_swap_x128", spl_obs_swap_x128) in
+    // let () = Test.log("spl_obs_swap_x128", spl_obs_swap_x128) in
 
-    let total_spl = spl_x128 + spl_obs_swap_x128 in
-    let () = Test.log("total_spl", total_spl) in
-
-    // let result = total / (duration_obs_swap + duration) in
-    // let () = Test.log("result", result) in
-    // let temp = (Bitwise.shift_right (total_spl * liquidity_delta)  128n) in
-    // let () = Test.log("temp", temp) in
-    // let res = (Bitwise.shift_right (total_spl * liquidity_delta)  128n) / (duration_obs_swap + duration) in
-    // let () = Test.log("res", res) in
+    let _total_spl = spl_x128 + spl_obs_swap_x128 in
+    // let () = Test.log("total_spl", total_spl) in
 
     // RECOMPUTE PRICE
     // tick = exp(0.0001) ^ ( (tick_cumulative_t2 - tick_cumulative_t1) / (t2 - t1) )
@@ -162,7 +154,7 @@ let test_twap_simple =
     // else 
     //     0 - (Bitwise.shift_left (abs(expected_lower_accumulator.tick_cumulative)) 128n) / (liquidity_delta * total_spl) 
     // in
-    let () = Test.log("tick", tick) in
+    // let () = Test.log("tick", tick) in
     let () = assert(tick = -9) in   // verify
     // let () = Test.log("tick2", tick2) in
     let price_x80 = Cfmm.half_bps_pow(tick, s_after.ladder) in
@@ -179,7 +171,7 @@ let test_twap_simple =
 
 // test_twap_simple (SET ->  SWAP -> OBS)
 let test_twap_2 = 
-    let () = Test.log(" ////////////////////////////////// test_twap_2 ////////////////////////////////// ") in
+    // let () = Test.log(" ////////////////////////////////// test_twap_2 ////////////////////////////////// ") in
     let feeBps = 2000n in
     let protoFeeBps = 700n in
     let effectiveProtoFeeBps = if config.y = CTEZ then protoFeeBps else 0n in
@@ -216,78 +208,78 @@ let test_twap_2 =
     let t_before_set_position = Tezos.get_now() in 
     let liquidity_delta = 1_000_000n in 
     // SET POSITION by liquidityProvider
-    let () = Test.log("SET_POSITION") in
+    // let () = Test.log("SET_POSITION") in
     let () = Test.set_source liquidityProvider in
     let param : Cfmm.set_position_param = Cfmm_helper.generate_set_position_param(liquidity_delta, (lowerTickIndex, upperTickIndex)) in
     let () = Cfmm_helper.set_position_success(param, 0tez, cfmm.contr) in
 
     // DEBUG
     let s_after = Test.get_storage cfmm.taddr in
-    let () = Test.log("CUMUL after set_position", s_after.cumulatives_buffer) in
+    // let () = Test.log("CUMUL after set_position", s_after.cumulatives_buffer) in
     let lower_tick = match Big_map.find_opt {i=lowerTickIndex} s_after.ticks with
     | Some ts -> ts
     | None -> Test.failwith("lower tick not initialized")
     in
-    let lowerCumulativesOutside = lower_tick.tick_cumulative_outside in
+    let _lowerCumulativesOutside = lower_tick.tick_cumulative_outside in
     let upper_tick = match Big_map.find_opt {i=upperTickIndex} s_after.ticks with
     | Some ts -> ts
     | None -> Test.failwith("lower tick not initialized")
     in
-    let upperCumulativesOutside = upper_tick.tick_cumulative_outside in
-    let () = Test.log("lowerCumulativesOutside", lowerCumulativesOutside) in
-    let () = Test.log("upperCumulativesOutside", upperCumulativesOutside) in
+    let _upperCumulativesOutside = upper_tick.tick_cumulative_outside in
+    // let () = Test.log("lowerCumulativesOutside", lowerCumulativesOutside) in
+    // let () = Test.log("upperCumulativesOutside", upperCumulativesOutside) in
 
     let t_before_swap = Tezos.get_now() in 
-    let () = Test.log(t_before_swap - (0: timestamp)) in
+    // let () = Test.log(t_before_swap - (0: timestamp)) in
     // SWAP X
-    let () = Test.log("SWAP") in
+    // let () = Test.log("SWAP") in
     let () = Test.set_source swapper in
     let param : Cfmm.x_to_y_param = Cfmm_helper.generate_x_to_y_param(500000n, 0n, swapReceiver) in
-    let r = Cfmm_helper.x_to_y(param, 0tez, cfmm.contr) in
-    let () = Test.log(r) in
+    let _r = Cfmm_helper.x_to_y(param, 0tez, cfmm.contr) in
+    // let () = Test.log(r) in
     let duration = t_before_swap - t_before_set_position in 
-    let () = Test.log("duration", duration) in
+    // let () = Test.log("duration", duration) in
 
    // DEBUG
     let s_after = Test.get_storage cfmm.taddr in
-    let () = Test.log("CUMUL after swap", s_after.cumulatives_buffer) in
+    // let () = Test.log("CUMUL after swap", s_after.cumulatives_buffer) in
     let lower_tick = match Big_map.find_opt {i=lowerTickIndex} s_after.ticks with
     | Some ts -> ts
     | None -> Test.failwith("lower tick not initialized")
     in
-    let lowerCumulativesOutside = lower_tick.tick_cumulative_outside in
+    let _lowerCumulativesOutside = lower_tick.tick_cumulative_outside in
     let upper_tick = match Big_map.find_opt {i=upperTickIndex} s_after.ticks with
     | Some ts -> ts
     | None -> Test.failwith("lower tick not initialized")
     in
-    let upperCumulativesOutside = upper_tick.tick_cumulative_outside in
-    let () = Test.log("lowerCumulativesOutside", lowerCumulativesOutside) in
-    let () = Test.log("upperCumulativesOutside", upperCumulativesOutside) in
+    let _upperCumulativesOutside = upper_tick.tick_cumulative_outside in
+    // let () = Test.log("lowerCumulativesOutside", lowerCumulativesOutside) in
+    // let () = Test.log("upperCumulativesOutside", upperCumulativesOutside) in
 
-    let spl_x128 = (Bitwise.shift_left (abs(duration)) 128n) / liquidity_delta in
-    let () = Test.log("spl_x128", spl_x128) in
+    let _spl_x128 = (Bitwise.shift_left (abs(duration)) 128n) / liquidity_delta in
+    // let () = Test.log("spl_x128", spl_x128) in
 
     // SET POSITION
     let _t_before_pos2 = Tezos.get_now() in 
-    let () = Test.log("SET_POSITION 2") in
+    // let () = Test.log("SET_POSITION 2") in
     let () = Test.set_source liquidityProvider in
     let param : Cfmm.set_position_param = Cfmm_helper.generate_set_position_param(liquidity_delta, (lowerTickIndex, upperTickIndex)) in
     let () = Cfmm_helper.set_position_success(param, 0tez, cfmm.contr) in
 
    // DEBUG
-    let s_after = Test.get_storage cfmm.taddr in
-    let () = Test.log("CUMUL after pos2", s_after.cumulatives_buffer) in
+    let _s_after = Test.get_storage cfmm.taddr in
+    // let () = Test.log("CUMUL after pos2", s_after.cumulatives_buffer) in
 
     // OBSERVE
     let t_before_observe = Tezos.get_now() in 
     let s_after = Test.get_storage cfmm.taddr in
     let expected_lower_accumulator = Cfmm_helper.initTickAccumulators(cfmm.addr, observer, s_after, lowerTickIndex) in
-    let () = Test.log("expected_lower_accumulator", expected_lower_accumulator) in
+    // let () = Test.log("expected_lower_accumulator", expected_lower_accumulator) in
 
     // DEBUG
     let s_after = Test.get_storage cfmm.taddr in
     // let () = Test.log(s_after.cumulatives_buffer) in
-    let () = Test.log("CUMUL after observe", s_after.cumulatives_buffer) in
+    // let () = Test.log("CUMUL after observe", s_after.cumulatives_buffer) in
 
     // RECOMPUTE PRICE
     // exp(0.0001) ^ ( (tick_cumulative_t2 - tick_cumulative_t1) / (t2 - t1) )
@@ -298,7 +290,7 @@ let test_twap_2 =
     else
         0 - abs(expected_lower_accumulator.tick_cumulative - 0) / abs(duration_total)
     in
-    let () = Test.log("tick", tick) in
+    // let () = Test.log("tick", tick) in
     let price_x80 = Cfmm.half_bps_pow(tick, s_after.ladder) in
     // let () = Test.log("price_x80", price_x80) in
     let precision = 1000000n in
@@ -306,6 +298,4 @@ let test_twap_2 =
     // let () = Test.log("sqrt_price (1/1000000)", final_sqrt_price) in
     let final_price = final_sqrt_price * final_sqrt_price / precision in
     let () = Test.log("price (1/1000000)", final_price) in
-
-
     ()
