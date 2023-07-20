@@ -140,8 +140,6 @@ let rec x_to_y_rec (p : x_to_y_rec_param) : x_to_y_rec_param =
         if cur_tick_index_new.i >= p.s.cur_tick_witness.i then
             (* The trade did not push us past the current tick. *)
             let dy = Bitwise.shift_right ((assert_nat (p.s.sqrt_price.x80 - sqrt_price_new.x80, internal_bad_sqrt_price_move_x_direction)) * p.s.liquidity) 80n in
-            // let _ : unit = ([%Michelson ({| { FAILWITH } |} : string * (nat * nat * nat * nat * nat * nat) -> unit)]
-            // ("DY", (dy, fee, p.dx, p.s.liquidity, p.s.sqrt_price.x80, sqrt_price_new.x80))) in
             let s_new = {p.s with
                 sqrt_price = sqrt_price_new ;
                 cur_tick_index = cur_tick_index_new ;

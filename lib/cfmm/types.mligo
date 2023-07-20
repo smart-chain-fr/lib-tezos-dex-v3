@@ -421,11 +421,6 @@ type y_to_x_param = {
 
 type y_to_x_rec_param = x_to_y_rec_param
 
-type snapshot_cumulatives_inside_view_param = {
-    lower_tick_index : tick_index ;
-    upper_tick_index : tick_index ;
-}
-
 type snapshot_cumulatives_inside_param = {
     lower_tick_index : tick_index ;
     upper_tick_index : tick_index ;

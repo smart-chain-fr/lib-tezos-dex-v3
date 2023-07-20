@@ -1,5 +1,6 @@
 (* Compilation Pragmas *)
 
 #define DEBUG
+#define ON_CHAIN_VIEWS
 (* Import of the main module *)
-#include "main.mligo"
+#include "../../lib/cfmm/main.mligo"

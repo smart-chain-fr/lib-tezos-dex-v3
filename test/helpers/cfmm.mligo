@@ -1,5 +1,5 @@
-// #import "../../lib/cfmm/main.mligo" "Cfmm"
-#import "../../lib/cfmm/main_fa2_fa2.mligo" "Cfmm"
+#import "../../lib/cfmm/main.mligo" "Cfmm"
+// #import "../../ligo/main_fa2_fa2.mligo" "Cfmm"
 #import "./assert.mligo" "Assert"
 #import "./utils.mligo" "Utils"
 #import "../../lib/cfmm/defaults.mligo" "Default"
@@ -38,7 +38,7 @@ let base_storage (x_token_address, y_token_address, tick_spacing, fee_bps, proto
     let metadata_map = (Big_map.empty : Cfmm.metadata_map) in
     Default.default_storage constants init_cumulatives_buffer_extra_slots metadata_map
 
-(* Originate a Cfmm contract with given init_storage storage *)
+(* Originate a Cfmm contract with given init_storage storage (without on-chain views) *)
 let originate (init_storage : Cfmm.storage) =
     let (taddr, _, _) = Test.originate_uncurried Cfmm.main init_storage 0mutez in
     let contr = Test.to_contract taddr in
@@ -47,30 +47,13 @@ let originate (init_storage : Cfmm.storage) =
 
 (*
     Originate a Cfmm contract with given init_storage storage
-    Use this one if you need access to views
+    Use this one if you need access to on-chain views
 *)
-let originate_from_file (init_storage, balance : Cfmm.storage * tez) =
-    let f = "../../lib/cfmm/main_fa2_fa2.mligo" in
-    let v_mich = Test.run (fun (x:Cfmm.storage) -> x) init_storage in
-    let (addr, _, _) = Test.originate_from_file f "main" ["v_get_constants"] v_mich balance in
-    let taddr : taddr = Test.cast_address addr in
-    let contr = Test.to_contract taddr in
-    {addr = addr; taddr = taddr; contr = contr}
-
-let originate_from_file_fa12_fa2 (init_storage, balance : Cfmm.storage * tez) =
-    let f = "../../lib/cfmm/main_fa12_fa2.mligo" in
-    let v_mich = Test.run (fun (x:Cfmm.storage) -> x) init_storage in
-    // let (addr, _, _) = Test.originate_from_file f "main" ["v_get_position_info"; "v_observe"; "v_snapshot_cumulatives_inside"] v_mich balance in
-    let (addr, _, _) = Test.originate_from_file f "main" ["v_get_constants"] v_mich balance in
-    let taddr : taddr = Test.cast_address addr in
-    let contr = Test.to_contract taddr in
-    {addr = addr; taddr = taddr; contr = contr}
-
 let originate_from_file_by_config (config, init_storage, balance : Config_helper.config * Cfmm.storage * tez) =
     let f = Config_helper.get_main_path(config) in
     let v_mich = Test.run (fun (x:Cfmm.storage) -> x) init_storage in
     // let (addr, _, _) = Test.originate_from_file f "main" ["v_get_position_info"; "v_observe"; "v_snapshot_cumulatives_inside"] v_mich balance in
-    let (addr, _, _) = Test.originate_from_file f "main" ["v_get_constants"] v_mich balance in
+    let (addr, _, _) = Test.originate_from_file f "main" ["v_get_position_info"; "v_get_constants"] v_mich balance in
     let taddr : taddr = Test.cast_address addr in
     let contr = Test.to_contract taddr in
     {addr = addr; taddr = taddr; contr = contr}
