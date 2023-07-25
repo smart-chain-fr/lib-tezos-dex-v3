@@ -9,7 +9,7 @@ TWAP has not been fully tested in Cameligo yet, but the original repository prov
 
 ## Documentation
 
-The original documentation of the segmented-cfmm has been copied in this library in `docs` directory.
+The original documentation of the segmented-cfmm has been partially copied in this library in `docs` directory. One can find error code explanations and specifications of the segmented-cfmm contract.
 
 
 ## How to use this library
