@@ -7,13 +7,17 @@ This version provides some tests in cameligo and helpers which illustrate how to
 
 TWAP has not been fully tested in Cameligo yet, but the original repository provided some haskell tests covering the TWAP.
 
+## Documentation
+
+The original documentation of the segmented-cfmm has been partially copied in this library in `docs` directory. One can find error code explanations and specifications of the segmented-cfmm contract.
+
 
 ## How to use this library
 
 This library must be specified in the dependencies of your project. this is done by installing the dex-v3 package.
 The package.json file must have the following dependency
 ```
-{ "dependencies": { "dex-v3": "^0.1.2" } }
+{ "dependencies": { "dex-v3": "^1.0.0" } }
 ```
 
 This library can be used to a liquidity pool (uniswap-v3-like) very easily
@@ -185,7 +189,7 @@ This command will add a dependency in a package.json file.
 
 Here is an example of the resulting package.json file.
 ```
-{ "dependencies": { "dex-v3": "^0.1.2" } }
+{ "dependencies": { "dex-v3": "^1.0.0" } }
 ```
 
 ### Compiling

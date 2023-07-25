@@ -179,7 +179,6 @@ let test_position_initialization =
     // -- | Attemps to execute a swap.
     // -- If it fails with `tooBigPriceChangeErr`, try again with a smaller amount.
     let rec attempt_swapX2Y_rec_by_decreasing(amount, caller, receiver : nat * address * address) : unit =
-        // let () = Test.log("attempt_apply_rec_by_decreasing") in
         let () = Test.set_source caller in
         let param : Cfmm.x_to_y_param = Cfmm_helper.generate_x_to_y_param(amount, 0n, receiver) in
         let r = Cfmm_helper.x_to_y(param, 0tez, cfmm.contr) in
@@ -195,7 +194,6 @@ let test_position_initialization =
             | Success _ -> ()
     in
     let rec attempt_swapY2X_rec_by_decreasing(amount, caller, receiver : nat * address * address) : unit =
-        // let () = Test.log("attempt_apply_rec_by_decreasing") in
         let () = Test.set_source caller in
         let param : Cfmm.y_to_x_param = Cfmm_helper.generate_y_to_x_param(amount, 0n, receiver) in
         let r = Cfmm_helper.y_to_x(param, 0tez, cfmm.contr) in
@@ -282,7 +280,7 @@ let test_position_initialization =
         | Some ts -> ts
         | None -> Test.failwith("lower tick not initialized")
         in
-        // TODO : uncomment
+        // TODO : uncomment asserts
         // let () = assert(int(lower_tick.seconds_outside) = expected_lower_accumulator.seconds) in
         // let () = assert(lower_tick.tick_cumulative_outside = expected_lower_accumulator.tick_cumulative) in
         let () = assert(int(lower_tick.fee_growth_outside.x.x128) = expected_lower_accumulator.fee_growth.x.x128) in
@@ -295,7 +293,7 @@ let test_position_initialization =
         | Some ts -> ts
         | None -> Test.failwith("upper tick not initialized")
         in
-        // TODO : uncomment
+        // TODO : uncomment asserts
         // let () = assert(int(upper_tick.seconds_outside) = expected_upper_accumulator.seconds) in
         // let () = assert(upper_tick.tick_cumulative_outside = expected_upper_accumulator.tick_cumulative) in
         let () = assert(int(upper_tick.fee_growth_outside.x.x128) = expected_upper_accumulator.fee_growth.x.x128) in
@@ -326,7 +324,6 @@ let test_position_initialization =
         let current_time = Tezos.get_now() in
         let () = Observer_helper.call_observe_success((cfmm.addr, [current_time]), observer.contr) in
         let cumul_buffer = Test.get_storage observer.taddr in
-        // let () = Test.log("[process] observer helper", (current_time - (0: timestamp)),  cumul_buffer) in
 
         let expectedAccumulatorInside = Cfmm_helper.tickAccumulatorsInside(s_after, current_time - (0: timestamp), cumul_buffer) ({i=cpd.cpdLowerTickIndex}, {i=cpd.cpdUpperTickIndex}) in
         let expectedFeeGrowthInside = expectedAccumulatorInside.fee_growth in
@@ -339,15 +336,13 @@ let test_position_initialization =
         let finalCfmmBalanceY = ExtendedFA2_helper.get_user_balance(tokenY.taddr, cfmm.addr) in
         let epsilon_x_min = 1 in
         let epsilon_y_min = 1 in
-        let epsilon_x_max = 1 in // TODO: SHOULD be 0
-        let epsilon_y_max = 1 in // TODO: SHOULD be 0
+        let epsilon_x_max = 1 in 
+        let epsilon_y_max = 1 in 
         let expected_min_bound_cfmm_balance_x = if epsilon_x_min <= initialCfmmBalanceX + delta_x then initialCfmmBalanceX + delta_x - epsilon_x_min else 0 in
         let expected_min_bound_cfmm_balance_y = if epsilon_y_min <= initialCfmmBalanceY + delta_y then initialCfmmBalanceY + delta_y - epsilon_y_min else 0 in
-        // let () = Test.log(finalCfmmBalanceX, "in range", expected_min_bound_cfmm_balance_x, initialCfmmBalanceX + delta_x + epsilon_x_max) in
         let () = assert(expected_min_bound_cfmm_balance_x <= int(finalCfmmBalanceX) && int(finalCfmmBalanceX) <= initialCfmmBalanceX + delta_x + epsilon_x_max) in
         let () = assert(expected_min_bound_cfmm_balance_y <= int(finalCfmmBalanceY) && int(finalCfmmBalanceY) <= initialCfmmBalanceY + delta_y + epsilon_y_max) in
         ()
     in
     let _ret = Utils.List.zipWith process datas swap_directions in
-    let () = Test.log("1 TODO remaining") in
     ()

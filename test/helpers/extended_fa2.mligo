@@ -62,7 +62,6 @@ let get_user_balance(taddr, owner : taddr * address) =
 let assert_user_balance(taddr, owner, expected_balance : taddr * address * nat) =
     let s = Test.get_storage taddr in
     let user_balance = Token.FA2.Ledger.get_for_user s.ledger owner in
-    // let () = Test.log(s) in 
     assert(user_balance = expected_balance)
 
 let assert_user_balance_in_range(taddr, owner, expected_balance, epsilon : taddr * address * nat * nat) =

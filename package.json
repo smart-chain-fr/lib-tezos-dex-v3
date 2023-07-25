@@ -1,6 +1,6 @@
 {
     "name": "dex-v3",
-    "version": "0.1.2",
+    "version": "1.0.0",
     "main": "./lib/cfmm/main.mligo",
     "description": "Library of Liquidity pool (Uniswap-v3)",
     "directories": {
