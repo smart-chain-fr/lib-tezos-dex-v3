@@ -61,7 +61,7 @@ let boot_token_fa12 (token_id, contract_balance, beneficiary, beneficiary_amount
     in
     let metadata = Big_map.literal([
         ("", Bytes.pack("tezos-storage:contents"));
-        ("contents", ("54657374546F6B656E": bytes))
+        ("contents", ("54657374546f6b656e46413132": bytes))
       ]) 
     in
 
