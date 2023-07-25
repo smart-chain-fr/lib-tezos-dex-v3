@@ -5,7 +5,6 @@ let rec repeat (type a) (count, f, gen_args, acc : nat * (a -> test_exec_result)
         acc
     else
         let args = gen_args count in
-        // let () = Test.log(args) in
         let res = f(args) in
         repeat(abs(count - 1n), f, gen_args, res :: acc)
 
@@ -14,7 +13,6 @@ let rec generic_repeat (type a b) (count, f, gen_args, acc : nat * (a -> b) * (n
         acc
     else
         let args = gen_args count in
-        // let () = Test.log(args) in
         let res = f(args) in
         generic_repeat(abs(count - 1n), f, gen_args, res :: acc)
 

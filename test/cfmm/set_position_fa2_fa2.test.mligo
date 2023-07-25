@@ -10,56 +10,6 @@ let () = Log.describe("[FA2-FA2] [Cfmm.set_position] test suite")
 
 let config = ({x=FA2; y=FA2} : Config_helper.config)
 
-// (* Successful Set_position *)
-// let test_success_debug =
-//     let accounts = Bootstrap.boot_accounts() in
-//     let (user1, _user2, _, _, _) = accounts in
-//     let tokenX = Bootstrap.boot_token(0n, 0tez, user1, 1000000n) in
-//     let tokenY = Bootstrap.boot_token(0n, 0tez, user1, 1000000n) in
-
-//     let cfmm = Bootstrap.boot_cfmm_by_config(config, tokenX.addr, tokenY.addr, 1n, 10n, 10n, 0tez) in
-//     let () = Test.set_source user1 in
-//     let () = ExtendedFA2_helper.update_operators_success([Add_operator({owner=user1; operator=cfmm.addr; token_id=0n})], tokenX.contr) in
-//     let () = ExtendedFA2_helper.update_operators_success([Add_operator({owner=user1; operator=cfmm.addr; token_id=0n})], tokenY.contr) in
-
-//     // let param : Cfmm.set_position_param = Cfmm_helper.generate_set_position_param(1000000n, (-15, 10)) in
-//     let param : Cfmm.set_position_param = {
-//         lower_tick_index = {i = -10};
-//         upper_tick_index = {i = 1000};
-//         lower_tick_witness = {i = -1048575};
-//         upper_tick_witness = {i = -1048575};
-//         liquidity = 2000n;
-//         deadline = Tezos.get_now() + 1000;
-//         maximum_tokens_contributed = {x = 1000000n; y = 1000000n};
-//     }
-//     in
-//     let r = Cfmm_helper.set_position(param, 0tez, cfmm.contr) in
-//     let () = Test.log(r) in
-//     let s = Test.get_storage cfmm.taddr in
-//     let () = Test.log(s.liquidity) in
-//     let nb_token_x = ExtendedFA2_helper.get_user_balance(tokenX.taddr, cfmm.addr) in
-//     let () = Test.log(nb_token_x) in
-//     let nb_token_y = ExtendedFA2_helper.get_user_balance(tokenY.taddr, cfmm.addr) in
-//     let () = Test.log(nb_token_y) in
-
-//         // let param : Cfmm.set_position_param = Cfmm_helper.generate_set_position_param(1000000n, (-15, 10)) in
-//     let param : Cfmm.set_position_param = {
-//         lower_tick_index = {i = -500};
-//         upper_tick_index = {i = 100};
-//         lower_tick_witness = {i = -1048575};
-//         upper_tick_witness = {i = -1048575};
-//         liquidity = 2000n;
-//         deadline = Tezos.get_now() + 1000;
-//         maximum_tokens_contributed = {x = 1000000n; y = 1000000n};
-//     }
-//     in
-//     let r = Cfmm_helper.set_position(param, 0tez, cfmm.contr) in
-//     let nb_token_x = ExtendedFA2_helper.get_user_balance(tokenX.taddr, cfmm.addr) in
-//     let () = Test.log(nb_token_x) in
-//     let nb_token_y = ExtendedFA2_helper.get_user_balance(tokenY.taddr, cfmm.addr) in
-//     let () = Test.log(nb_token_y) in
-//     ()
-
 (* Successful Set_position *)
 let test_success =
     let accounts = Bootstrap.boot_accounts() in
@@ -266,7 +216,6 @@ let test_failure_set_position_lower_max_token_contributed =
     let r = Cfmm_helper.set_position(param, 0tez, cfmm.contr) in
     Assert.maximum_tokens_contributed_failure r Cfmm.high_tokens_err
 
-// TODO : duplicate test ???? 
 (* Successful Set_position  + Update_position *)
 let test_success_deposit_withdrawal_position =
     let accounts = Bootstrap.boot_accounts() in

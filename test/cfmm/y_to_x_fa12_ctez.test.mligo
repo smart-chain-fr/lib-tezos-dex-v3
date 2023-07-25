@@ -549,7 +549,6 @@ let test_many_small_swaps_equivalent_to_1_big_swap =
     let cfmm2BalanceY = FA12_helper.get_user_balance(tokenY2.taddr, cfmm2.addr) in
     assert(cfmm1BalanceY = cfmm2BalanceY)
 
-// TODO (compare cfmm1 & cfmm2)
 let test_crossing_tick =
     let feeBps = 200n in
     let protoFeeBps = 5n in //700n in
@@ -628,7 +627,6 @@ let test_crossing_tick =
         Big_map.add {i=k} v acc
     in
     let expected_ticks_so_map = List.fold insert_one expected_ticks_so (Big_map.empty : (Cfmm.tick_index, int) big_map) in
-    // let () = Test.log("expected_ticks_so_map", expected_ticks_so_map) in
 
     // since s.liquidity is increased only when current tick index is between lower tick and upper tick, 
     // then only the set_position on [0, 200] will increase the global liquidity
@@ -637,7 +635,6 @@ let test_crossing_tick =
 
     // CHECK INVARIANTS
     let observer = Bootstrap.boot_observe_consumer(0tez) in
-    // let () = Test.log("check_all_invariants") in
     let _ : unit = Cfmm_helper.check_all_invariants(cfmm1.taddr, cfmm1.addr, observer) in
     let _ : unit = Cfmm_helper.check_all_invariants(cfmm2.taddr, cfmm2.addr, observer) in
 
@@ -684,7 +681,7 @@ let test_crossing_tick =
     // -- Current tick should be the same.
     let () = assert(s_after_cfmm1.cur_tick_index = s_after_cfmm2.cur_tick_index) in
 
-    // TODO: fee_growth
+    // fee_growth
     let feeGrowthX_cfmm1 = s_after_cfmm1.fee_growth.x in
     let feeGrowthY_cfmm1 = s_after_cfmm1.fee_growth.y in
     let feeGrowthX_cfmm2 = s_after_cfmm2.fee_growth.x in
@@ -693,10 +690,7 @@ let test_crossing_tick =
     let () = assert(feeGrowthX_cfmm2 = {x128=0n}) in
 
 
-    // TODO !!  margin error very big !!
     let marginOfError = (Bitwise.shift_left 10n 128n) / liquidity in
-    // let () = Test.log("marginOfError", marginOfError) in
-    // let () = Test.log(feeGrowthX_cfmm2.x128) in
     let () = assert((feeGrowthY_cfmm1.x128 + 0n <= feeGrowthY_cfmm2.x128) && (feeGrowthY_cfmm2.x128 < feeGrowthY_cfmm1.x128 + marginOfError)) in
 
 
@@ -734,11 +728,7 @@ let test_crossing_tick =
     let () = assert(feeReceiver2BalanceX = 0n) in 
     let () = assert((feeReceiver1BalanceY - 10n <= int(feeReceiver2BalanceY)) && (feeReceiver2BalanceY < feeReceiver1BalanceY + 10n)) in
 
-    // TODO
     // -- The global accumulators of both contracts should be the same.
-    // let () = Test.log("check cumulatives_buffer") in 
-    // let () = Test.log(s_after_cfmm1.cumulatives_buffer) in
-    // let () = Test.log(s_after_cfmm2.cumulatives_buffer) in
     // let () = assert(s_after_cfmm1.cumulatives_buffer = s_after_cfmm2.cumulatives_buffer) in
 
     // Check that the ticks' states were updated correctly after being crossed.
@@ -763,24 +753,14 @@ let test_crossing_tick =
                 | Some v -> v
                 | None -> Test.failwith("expected tick so not found")
                 in
-                // let () = Test.log("t_swap_5000_before", t_swap_5000_before - (0: timestamp)) in
-                // let () = Test.log("expected_so", expected_so) in
-                // let () = Test.log("current_tick.seconds_outside",  ts.seconds_outside) in 
-                // let () = Test.log("next_tick.seconds_outside",  nts.seconds_outside) in
-                // let () = Test.log("t_swap_5000_after", t_swap_5000_after - (0: timestamp)) in
                 
                 let wait_between_pos_swap = t_swap_5000_before - expected_so - (0: timestamp) in                
                 let wait_between_pos_swap_x128 = Bitwise.shift_left (abs(wait_between_pos_swap)) 128n in
                 let _expected_splo = abs(wait_between_pos_swap_x128 / int(liquidity)) in
                 // There may be a +1/-1 error due to the rounding of the seconds_per_liquidity_outside
-                // let () = Test.log(ts.seconds_outside) in
-                // let () = Test.log(wait_between_pos_swap) in
                 // let _ : unit = assert(abs(ts.seconds_per_liquidity_outside.x128 - expected_splo) <= 2n) in 
                 // let _ : unit = assert(int(ts.seconds_outside) = t_swap_5000_after) in 
                 
-                // let () = Test.log(ts.tick_cumulative_outside) in 
-                // let () = Test.log(wait_between_pos_swap * _s_initial_cfmm_2.cur_tick_index.i) in 
-                // TODO : 
                 // let _ : unit = assert(ts.tick_cumulative_outside = waiTime_x128.x128 * s_after_cfmm1.cur_tick_index.i) in                
                 let _ : unit = assert((ts.fee_growth_outside.x.x128 <> 0n) || (ts.fee_growth_outside.y.x128 <> 0n)) in 
                 assert_tick_indexes((current,ts)::acc, {i=current.i + interval}, interval)
@@ -795,7 +775,6 @@ let test_crossing_tick =
     let start_indice = add_interval_rec(lowerTickIndex, interval) in
     // check [0; 500; 1000] tick indexes
     let _ticks_lower_0 = assert_tick_indexes(([]: (Cfmm.tick_index * Cfmm.tick_state) list), {i=start_indice}, interval) in
-    let () = Test.log("3 TODO remaining") in
     ()
 
 
@@ -1039,7 +1018,5 @@ let test_swaps_are_noops_when_liquidity_is_zero  =
     let () = assert(initial_cfmm_balance_x = cfmm_balance_x) in
     let () = assert(initial_cfmm_balance_y = cfmm_balance_y) in
     let s_after = Test.get_storage cfmm.taddr in
-    let () = Cfmm_helper.assert_storage_equal(s_before, s_after) in // TODO (cumulative buffer not verified)
-    let () = Test.log("1 TODO remaining") in
     ()
 

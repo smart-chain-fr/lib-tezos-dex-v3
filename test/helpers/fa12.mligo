@@ -30,23 +30,6 @@ let dummy_token_metadata (token_id : nat): Token.FA12.TokenMetadata.data = {
     token_info=Map.literal[("", 0x01)];
 }
 
-
-
-(* Originate a Token contract with given init_storage storage *)
-// let originate (init_storage : Token.storage) =
-//     let (taddr, _, _) = Test.originate Token.main init_storage 0mutez in
-//     let contr = Test.to_contract taddr in
-//     let addr = Tezos.address contr in
-//     {addr = addr; taddr = taddr; contr = contr}
-
-// let originate_from_file (init_storage, balance : Token.storage * tez) =
-//     let f = "../token/extended_fa2.mligo" in
-//     let v_mich = Test.run (fun (x:Token.storage) -> x) init_storage in
-//     let (addr, _, _) = Test.originate_from_file f "main" ["get_balance"] v_mich balance in
-//     let taddr : taddr = Test.cast_address addr in
-//     let contr = Test.to_contract taddr in
-//     {addr = addr; taddr = taddr; contr = contr}
-
 (* Call entry point of Token contr contract *)
 let call (p, contr : Token.parameter * contr) =
     Test.transfer_to_contract contr (p) 0mutez
@@ -71,7 +54,6 @@ let get_user_balance(taddr, owner : taddr * address) =
 let assert_user_balance(taddr, owner, expected_balance : taddr * address * nat) =
     let s = Test.get_storage taddr in
     let (user_balance, _) = Token.FA12.Ledger.get_for_user s.ledger owner in
-    // let () = Test.log(s) in 
     assert(user_balance = expected_balance)
 
 let assert_user_balance_in_range(taddr, owner, expected_balance, epsilon : taddr * address * nat * nat) =

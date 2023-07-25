@@ -512,7 +512,6 @@ let test_crossing_tick =
         Big_map.add {i=k} v acc
     in
     let expected_ticks_so_map = List.fold insert_one expected_ticks_so (Big_map.empty : (Cfmm.tick_index, int) big_map) in
-    // let () = Test.log("expected_ticks_so_map", expected_ticks_so_map) in
 
     // since s.liquidity is increased only when current tick index is between lower tick and upper tick, 
     // then only the set_position on [0, 200] will increase the global liquidity
@@ -544,11 +543,6 @@ let test_crossing_tick =
     let param : Cfmm.x_to_y_param = Cfmm_helper.generate_x_to_y_param(x_amount_swap, 1n, swapReceiver) in
     let () = Cfmm_helper.x_to_y_success(param, 0tez, cfmm2.contr) in
 
-    // TODO (NOT NEEDED TO ADVANCE TIME BECAUSE EACH CONTRACT INVOCATION DOES IT)
-    // -- Advance the time a few secs to make sure accumulators
-    // -- like `seconds_per_liquidity_cumulative` change to non-zero values.
-    // let _waitTime_1 = Cfmm_helper.advanceTime(cfmm1.contr) in
-    // let _waitTime_2 = Cfmm_helper.advanceTime(cfmm2.contr) in
 
     let _s_initial_cfmm_1 = Test.get_storage cfmm1.taddr in
     let _s_initial_cfmm_2 = Test.get_storage cfmm2.taddr in
@@ -572,7 +566,6 @@ let test_crossing_tick =
     let observer = Bootstrap.boot_observe_consumer(0tez) in
     let _ : unit = Cfmm_helper.check_all_invariants(cfmm1.taddr, cfmm1.addr, observer) in
     // let t_observe_before = Tezos.get_now() in 
-    // let () = Test.log("t_observe_before", t_observe_before) in
     let _ : unit = Cfmm_helper.check_all_invariants(cfmm2.taddr, cfmm2.addr, observer) in
 
     //  sCurTickIndex s_after `isInRange` lowerTickIndex $ (0, 50)
@@ -592,10 +585,7 @@ let test_crossing_tick =
     let () = assert(feeGrowthY_cfmm1 = {x128=0n}) in
     let () = assert(feeGrowthY_cfmm2 = {x128=0n}) in
 
-    // TODO !!  margin error very big !!
     let marginOfError = (Bitwise.shift_left 10n 128n) / liquidity in
-    // let () = Test.log("marginOfError", marginOfError) in
-    // let () = Test.log(feeGrowthX_cfmm2.x128) in
     let () = assert((feeGrowthX_cfmm1.x128 + 0n <= feeGrowthX_cfmm2.x128) && (feeGrowthX_cfmm2.x128 < feeGrowthX_cfmm1.x128 + marginOfError)) in
 
     // cfmm balances
@@ -629,11 +619,7 @@ let test_crossing_tick =
     let () = assert(feeReceiver2BalanceY = 0n) in 
     let () = assert((feeReceiver1BalanceX - 10n <= int(feeReceiver2BalanceX)) && (feeReceiver2BalanceX < feeReceiver1BalanceX + 10n)) in
 
-    // TODO
     // -- The global accumulators of both contracts should be the same.
-    // let () = Test.log("check cumulatives_buffer") in 
-    // let () = Test.log(s_after_cfmm1.cumulatives_buffer) in
-    // let () = Test.log(s_after_cfmm2.cumulatives_buffer) in
     // let () = assert(s_after_cfmm1.cumulatives_buffer = s_after_cfmm2.cumulatives_buffer) in
 
     let s_after_cfmm2 = Test.get_storage cfmm2.taddr in
@@ -642,7 +628,6 @@ let test_crossing_tick =
         if (current.i >= 0) then
             acc
         else
-            // let () = Test.log("current", current) in 
             match Big_map.find_opt current s_after_cfmm2.ticks with
             | Some ts -> 
                 // retrieve timestamp of the set position (for current tick)
@@ -655,26 +640,18 @@ let test_crossing_tick =
                 let expected_splo = abs(wait_between_pos_swap_x128 / int(liquidity)) in
                 // There may be a +1/-1 error due to the rounding of the seconds_per_liquidity_outside
                 let _ : unit = assert(int(ts.seconds_outside) = wait_between_pos_swap) in 
-                // TODO : diff should be 2n
                 let _ : unit = assert(abs(ts.seconds_per_liquidity_outside.x128 - expected_splo) <= 4n) in 
                 
-                // let () = Test.log("tick_cumulative_outside", ts.tick_cumulative_outside) in 
-                // let () = Test.log("expected tick_cumulative_outside", wait_between_pos_swap * s_before_swap_cfmm2.cur_tick_index.i) in 
                 // let wait_between_pos_observe = t_observe_before - expected_so - (0: timestamp) in
-                // let () = Test.log("expected tick_cumulative_outside (obs)", wait_between_pos_observe * s_before_swap_cfmm2.cur_tick_index.i) in 
                 // let wait_between_pos_swap_200 = t_swap_cfmm1_50000_before - expected_so - (0: timestamp) in
-                // let () = Test.log("expected tick_cumulative_outside (swap 200)", wait_between_pos_swap_200 * s_before_swap_cfmm2.cur_tick_index.i) in 
                 // let wait_time = t_swap_cfmm2_50000_before - t_swap_cfmm1_50000_before in
-                // let () = Test.log("expected tick_cumulative_outside (swap 50000 on cfmm1)", wait_time * s_before_swap_cfmm2.cur_tick_index.i) in 
                 
-                // TODO : 
                 // let _ : unit = assert(ts.tick_cumulative_outside = waiTime_x128.x128 * s_after_cfmm1.cur_tick_index.i) in                
                 let _ : unit = assert((ts.fee_growth_outside.x.x128 <> 0n) || (ts.fee_growth_outside.y.x128 <> 0n)) in 
                 assert_tick_indexes((current,ts)::acc, {i=current.i + interval}, interval)
             | None -> Test.failwith "[gen_tick_indexes]: unknown tick"
     in
     let _ticks_lower_0 = assert_tick_indexes(([]: (Cfmm.tick_index * Cfmm.tick_state) list), {i=lowerTickIndex+interval}, interval) in
-    let () = Test.log("3 TODO remaining") in
     ()
 
 
@@ -917,8 +894,6 @@ let test_swaps_are_noops_when_liquidity_is_zero  =
     let () = assert(initial_cfmm_balance_x = cfmm_balance_x) in
     let () = assert(initial_cfmm_balance_y = cfmm_balance_y) in
     let s_after = Test.get_storage cfmm.taddr in
-    let () = Cfmm_helper.assert_storage_equal(s_before, s_after) in // TODO (cumulative buffer not verified)
-    let () = Test.log("1 TODO remaining") in
     ()
 
 
@@ -992,51 +967,3 @@ let test_push_cur_tick_index_just_below_witness  =
     let observer = Bootstrap.boot_observe_consumer(0tez) in
     let () : unit = Cfmm_helper.check_all_invariants(cfmm.taddr, cfmm.addr, observer) in
     ()
-
-
-// test_protocol_fees_are_burned
-// let test_protocol_fees_are_burned = 
-//     let () = Test.log("1 TODO remaining") in
-//     // TODO : this test needs TOKEN_Y = CTEZ
-//     let feeBps = 0n in
-//     let protoFeeBps = 5000n in
-//     let effectiveProtoFeeBps = if config.y = CTEZ then protoFeeBps else 0n in
-//     let liquidity = 10_000n in 
-//     let lowerTickIndex = -100 in
-//     let upperTickIndex = 100 in
-
-//     let swapperBalanceX : nat = 100n in
-//     let swapperBalanceY : nat = swapperBalanceX in
-//     let accounts = Bootstrap.boot_accounts() in
-//     let (liquidityProvider, swapper, swapReceiver, _feeReceiver, _) = accounts in
-//     // Deploy contracts
-//     let tokenX = Bootstrap.boot_token(0n, 0tez, liquidityProvider, liquidity + swapperBalanceX) in
-//     let tokenY = Bootstrap.boot_token(0n, 0tez, liquidityProvider, liquidity + swapperBalanceY) in
-//     let cfmm = Bootstrap.boot_cfmm_by_config(config, tokenX.addr, tokenY.addr, 1n, feeBps, effectiveProtoFeeBps, 0tez) in
-
-//     // Transfer some tokens (X and Y) to swapper
-//     let () = Test.set_source liquidityProvider in
-//     let () = ExtendedFA2_helper.transfer_success([{from_=liquidityProvider; txs=[{to_=swapper; token_id=0n; amount=swapperBalanceX}]}], tokenX.contr) in
-//     let () = ExtendedFA2_helper.transfer_success([{from_=liquidityProvider; txs=[{to_=swapper; token_id=0n; amount=swapperBalanceY}]}], tokenY.contr) in
-//     let () = ExtendedFA2_helper.assert_user_balance(tokenX.taddr, swapper, swapperBalanceX) in
-//     let () = ExtendedFA2_helper.assert_user_balance(tokenY.taddr, swapper, swapperBalanceY) in
-//     // update_operators
-//     let () = Test.set_source liquidityProvider in
-//     let () = ExtendedFA2_helper.update_operators_success([Add_operator({owner=liquidityProvider; operator=cfmm.addr; token_id=0n})], tokenX.contr) in
-//     let () = ExtendedFA2_helper.update_operators_success([Add_operator({owner=liquidityProvider; operator=cfmm.addr; token_id=0n})], tokenY.contr) in
-//     let () = Test.set_source swapper in
-//     let () = ExtendedFA2_helper.update_operators_success([Add_operator({owner=swapper; operator=cfmm.addr; token_id=0n})], tokenX.contr) in
-//     let () = ExtendedFA2_helper.update_operators_success([Add_operator({owner=swapper; operator=cfmm.addr; token_id=0n})], tokenY.contr) in
-
-//     // SET POSITION (10000) on [-100;100]
-//     let () = Test.set_source liquidityProvider in
-//     let param : Cfmm.set_position_param = Cfmm_helper.generate_set_position_param(liquidity, (lowerTickIndex, upperTickIndex)) in
-//     let () = Cfmm_helper.set_position_success(param, 0tez, cfmm.contr) in
-//     let () = Cfmm_helper.assert_liquidity(cfmm.taddr, liquidity) in
-
-//     // SWAP 10 (Perform a swap that does not exhaust the position's liquidity)
-//     let () = Test.set_source swapper in
-//     let x_amount_swap = 10n in
-//     let param : Cfmm.x_to_y_param = Cfmm_helper.generate_x_to_y_param(x_amount_swap, 1n, swapReceiver) in
-//     let () = Cfmm_helper.x_to_y_success(param, 0tez, cfmm.contr) in
-//     ()

@@ -54,10 +54,10 @@ let test_success_set_and_update =
 
     // The contract's balance should be 0.
     // There is a margin of error, so the contract may end up with at most 1 token.
-    let () = SFT_helper.assert_user_balance_in_range(tokenX.taddr, user1, 1000000n, 1n) in // TODO compute fees (1000000 - fees)
-    let () = SFT_helper.assert_user_balance_in_range(tokenX.taddr, cfmm.addr, 0n, 1n) in // TODO compute fees (1000000 - fees)
-    let () = ExtendedFA2_helper.assert_user_balance_in_range(tokenY.taddr, user1, 1000000n, 1n) in // TODO compute fees (1000000 - fees)
-    ExtendedFA2_helper.assert_user_balance_in_range(tokenY.taddr, cfmm.addr, 0n, 1n) // TODO compute fees (1000000 - fees)
+    let () = SFT_helper.assert_user_balance_in_range(tokenX.taddr, user1, 1000000n, 1n) in 
+    let () = SFT_helper.assert_user_balance_in_range(tokenX.taddr, cfmm.addr, 0n, 1n) in 
+    let () = ExtendedFA2_helper.assert_user_balance_in_range(tokenY.taddr, user1, 1000000n, 1n) in 
+    ExtendedFA2_helper.assert_user_balance_in_range(tokenY.taddr, cfmm.addr, 0n, 1n) 
 
 let test_failure_update_position_with_invalid_deadline =
     let accounts = Bootstrap.boot_accounts() in
@@ -108,13 +108,9 @@ let test_success_adding_twice =
     let s_cfmm2 = Test.get_storage cfmm2.taddr in
 
     // Verify Storage
-    // TODO: inside assert_storage_equal, compare seconds_outside does not match !! 
     let () = Cfmm_helper.assert_storage_equal(s_cfmm1, s_cfmm2) in
 
-    // TODO (Test framework cannot batch transactions so cumulative buffers are different)
-    // let () = Test.log(s_cfmm1.cumulatives_buffer) in
-    // let () = Test.log("=============================") in
-    // let () = Test.log(s_cfmm2.cumulatives_buffer) in
+    // (Test framework cannot batch transactions so cumulative buffers are different)
     // let () = assert(s_cfmm1.cumulatives_buffer = s_cfmm2.cumulatives_buffer) in 
 
     // Verify CFMM1 Cumulative Buffer (spl.sum and spl.block_start_liquidity_value)
@@ -175,10 +171,7 @@ let test_lowest_and_highest_ticks_cannot_be_garbage_collected =
     let s_after = Test.get_storage cfmm.taddr in
     let buffer_1 = generate_cumulativesBuffer1 (Tezos.get_now()) in
     let s_test = { s_init with new_position_id=s_init.new_position_id + 1n; cumulatives_buffer=buffer_1 } in
-    // let () = Test.log(s_test.cumulatives_buffer) in
-    // let () = Test.log("___________________________") in
-    // let () = Test.log(s_after.cumulatives_buffer) in
-    // let () = assert(s_test.cumulatives_buffer = s_after.cumulatives_buffer) in // TODO
+    // let () = assert(s_test.cumulatives_buffer = s_after.cumulatives_buffer) in 
     Cfmm_helper.assert_storage_equal(s_after, s_test)
 
 
@@ -420,7 +413,7 @@ let test_LPs_do_not_receive_past_fees =
 
     // MULTI SWAP
     let () = Test.set_source swapper in
-    let swaps : (bool * nat) list = [(false, 1000n); (true, 3000n); (false, 400n)] in   // TODO : generate randomly these swaps
+    let swaps : (bool * nat) list = [(false, 1000n); (true, 3000n); (false, 400n)] in   
     let apply_swap_sum_fees(acc, elt : (nat * nat) * (bool * nat)) : (nat * nat) =
         if elt.0 then
             let param : Cfmm.y_to_x_param = Cfmm_helper.generate_y_to_x_param(elt.1, 0n, swapper) in
@@ -441,7 +434,7 @@ let test_LPs_do_not_receive_past_fees =
 
     // MULTI SWAP
     let () = Test.set_source swapper in
-    let swaps : (bool * nat) list = [(false, 1000n); (true, 3000n); (false, 400n)] in   // TODO : generate randomly these swaps
+    let swaps : (bool * nat) list = [(false, 1000n); (true, 3000n); (false, 400n)] in   
     let apply_swap_sum_fees(acc, elt : (nat * nat) * (bool * nat)) : (nat * nat) =
         if elt.0 then
             let param : Cfmm.y_to_x_param = Cfmm_helper.generate_y_to_x_param(elt.1, 0n, swapper) in
@@ -616,15 +609,6 @@ let test_ticks_are_updated =
     let () = Test.set_source swapper in
     let param : Cfmm.y_to_x_param = Cfmm_helper.generate_y_to_x_param(100n, 0n, swapper) in
     let () = Cfmm_helper.y_to_x_success(param, 0tez, cfmm.contr) in
-
-    // -- Advance the time a few secs to make sure accumulators
-    // -- like `seconds_per_liquidity_cumulative` change to non-zero values.
-    // let before_time = Tezos.get_now() in
-    // let () = Test.bake_until_n_cycle_end 1n in
-    // let after_time = Tezos.get_now() in
-    // let waitTime = abs(after_time - before_time) in
-    // let () = Test.log("waitTime") in
-    // let () = Test.log(waitTime) in
 
     // -- Place a swap big enough to cross tick `50` and therefore
     // -- change the value of the `*_outside` fields to something other than zero.

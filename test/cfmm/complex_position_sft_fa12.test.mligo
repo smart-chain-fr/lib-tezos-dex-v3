@@ -234,7 +234,6 @@ let test_position_initialization =
         let current_time = Tezos.get_now() in
         let () = Observer_helper.call_observe_success((cfmm.addr, [current_time]), observer.contr) in
         let cumul_buffer = Test.get_storage observer.taddr in
-        // let () = Test.log("[process] observer helper", (current_time - (0: timestamp)),  cumul_buffer) in
         let () = Cfmm_helper.check_all_invariants_with_buffer(cfmm.taddr, current_time - (0: timestamp), cumul_buffer) in
 
         let s_init = Test.get_storage cfmm.taddr in
@@ -319,7 +318,6 @@ let test_position_initialization =
         let current_time = Tezos.get_now() in
         let () = Observer_helper.call_observe_success((cfmm.addr, [current_time]), observer.contr) in
         let cumul_buffer = Test.get_storage observer.taddr in
-        // let () = Test.log("[process] observer helper", (current_time - (0: timestamp)),  cumul_buffer) in
 
         let expectedAccumulatorInside = Cfmm_helper.tickAccumulatorsInside(s_after, current_time - (0: timestamp), cumul_buffer) ({i=cpd.cpdLowerTickIndex}, {i=cpd.cpdUpperTickIndex}) in
         let expectedFeeGrowthInside = expectedAccumulatorInside.fee_growth in
@@ -332,15 +330,13 @@ let test_position_initialization =
         let finalCfmmBalanceY = FA12_helper.get_user_balance(tokenY.taddr, cfmm.addr) in
         let epsilon_x_min = 1 in
         let epsilon_y_min = 1 in
-        let epsilon_x_max = 1 in // TODO: SHOULD be 0
-        let epsilon_y_max = 1 in // TODO: SHOULD be 0
+        let epsilon_x_max = 1 in 
+        let epsilon_y_max = 1 in 
         let expected_min_bound_cfmm_balance_x = if epsilon_x_min <= initialCfmmBalanceX + delta_x then initialCfmmBalanceX + delta_x - epsilon_x_min else 0 in
         let expected_min_bound_cfmm_balance_y = if epsilon_y_min <= initialCfmmBalanceY + delta_y then initialCfmmBalanceY + delta_y - epsilon_y_min else 0 in
-        // let () = Test.log(finalCfmmBalanceX, "in range", expected_min_bound_cfmm_balance_x, initialCfmmBalanceX + delta_x + epsilon_x_max) in
         let () = assert(expected_min_bound_cfmm_balance_x <= int(finalCfmmBalanceX) && int(finalCfmmBalanceX) <= initialCfmmBalanceX + delta_x + epsilon_x_max) in
         let () = assert(expected_min_bound_cfmm_balance_y <= int(finalCfmmBalanceY) && int(finalCfmmBalanceY) <= initialCfmmBalanceY + delta_y + epsilon_y_max) in
         ()
     in
     let _ret = Utils.List.zipWith process datas swap_directions in
-    let () = Test.log("1 TODO remaining") in
     ()
