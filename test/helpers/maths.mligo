@@ -55,11 +55,11 @@ let calcReceivedX(sqrt_price_old, sqrt_price_new, liquidity : nat * nat * nat) :
         (liquidity * Bitwise.shift_left (abs(sqrt_price_new - sqrt_price_old)) 80n) / 
         (sqrt_price_new * sqrt_price_old) in
     // from test in haskell
-    let dx =
-        ((liquidity * _280 * 100000000000000000000000n) / sqrt_price_new)
-        -
-        ((liquidity * _280 * 100000000000000000000000n) / sqrt_price_old)
-    in
+    // let dx =
+    //     ((liquidity * _280 * 100000000000000000000000n) / sqrt_price_new)
+    //     -
+    //     ((liquidity * _280 * 100000000000000000000000n) / sqrt_price_old)
+    // in
     // -- dx is the amount of tokens to add to the pool.
     // -- To calculate how many tokens will be sent to the user, we flip the sign.
     // let version2_hs  = abs(0 - dx) / 100000000000000000000000n in

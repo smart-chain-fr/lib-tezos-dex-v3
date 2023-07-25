@@ -1005,7 +1005,6 @@ let test_swaps_are_noops_when_liquidity_is_zero  =
     let () = Cfmm_helper.y_to_x_success(param, 0tez, cfmm.contr) in
 
     // SWAP 100 Y_TOKEN (but cur_tick_index in a range with no liquidity) => no swap
-    let s_before = Test.get_storage cfmm.taddr in
     let initial_cfmm_balance_x = SFT_helper.get_user_balance(tokenX.taddr, cfmm.addr) in
     let initial_cfmm_balance_y = FA12_helper.get_user_balance(tokenY.taddr, cfmm.addr) in
     let () = Test.set_source swapper in
@@ -1018,6 +1017,5 @@ let test_swaps_are_noops_when_liquidity_is_zero  =
     let cfmm_balance_y = FA12_helper.get_user_balance(tokenY.taddr, cfmm.addr) in
     let () = assert(initial_cfmm_balance_x = cfmm_balance_x) in
     let () = assert(initial_cfmm_balance_y = cfmm_balance_y) in
-    let s_after = Test.get_storage cfmm.taddr in
     ()
 
